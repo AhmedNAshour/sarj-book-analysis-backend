@@ -10,7 +10,25 @@
     },
     {
       "key": "bookId",
-      "value": "",
+      "value": "pg1342",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "GROQ_API_KEY",
+      "value": "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",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "SAMBANOVA_API_KEY",
+      "value": "5852c36e-04f8-46bf-b395-c344f6c6abdd",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "SAMBANOVA_API_BASE_URL",
+      "value": "https://api.sambanova.ai/v1",
       "type": "default",
       "enabled": true
     }

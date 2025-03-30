@@ -2,7 +2,7 @@
   "info": {
     "name": "SARJ Book Analysis API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Collection for testing SARJ Book Analysis API endpoints"
+    "description": "Collection for testing SARJ Book Analysis API endpoints. This API allows you to fetch book content and metadata, as well as perform NLP analysis on books."
   },
   "item": [
     {
@@ -26,12 +26,12 @@
               "variable": [
                 {
                   "key": "bookId",
-                  "value": "your-book-id",
-                  "description": "ID of the book to fetch"
+                  "value": "pg1342",
+                  "description": "ID of the book to fetch (e.g., 'pg1342' for Pride and Prejudice)"
                 }
               ]
             },
-            "description": "Fetches the content of a specific book by ID"
+            "description": "Fetches the full text content of a specific book by ID. Use Project Gutenberg IDs prefixed with 'pg'."
           }
         },
         {
@@ -52,12 +52,12 @@
               "variable": [
                 {
                   "key": "bookId",
-                  "value": "your-book-id",
-                  "description": "ID of the book to fetch metadata for"
+                  "value": "pg1342",
+                  "description": "ID of the book to fetch metadata for (e.g., 'pg1342' for Pride and Prejudice)"
                 }
               ]
             },
-            "description": "Fetches metadata of a specific book by ID"
+            "description": "Fetches title, author, and other metadata for a specific book by ID. Use Project Gutenberg IDs prefixed with 'pg'."
           }
         }
       ]
@@ -83,8 +83,8 @@
               "variable": [
                 {
                   "key": "bookId",
-                  "value": "your-book-id",
-                  "description": "ID of the book to analyze"
+                  "value": "pg1342",
+                  "description": "ID of the book to analyze (e.g., 'pg1342' for Pride and Prejudice)"
                 }
               ]
             },
@@ -96,9 +96,38 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"content\": \"Optional book content. If not provided, it will be fetched using bookId\"\n}"
+              "raw": "{\n  \"options\": {\n    \"modelProvider\": \"groq\",\n    \"includeSummary\": true,\n    \"includeThemes\": true,\n    \"includeCharacters\": true,\n    \"includeStyleAnalysis\": true\n  }\n}"
             },
-            "description": "Performs full analysis on a book by ID or provided content"
+            "description": "Performs comprehensive analysis on a book using AI language models. You can specify which model provider to use (groq or sambanova) and which analysis components to include."
+          }
+        },
+        {
+          "name": "Analyze Custom Content",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/analysis/custom/full",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analysis",
+                "custom",
+                "full"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness, it was the spring of hope, it was the winter of despair, we had everything before us, we had nothing before us, we were all going direct to Heaven, we were all going direct the other way - in short, the period was so far like the present period, that some of its noisiest authorities insisted on its being received, for good or for evil, in the superlative degree of comparison only.\",\n  \"options\": {\n    \"modelProvider\": \"groq\",\n    \"includeSummary\": true,\n    \"includeThemes\": true,\n    \"includeStyleAnalysis\": true\n  }\n}"
+            },
+            "description": "Performs analysis on custom text content without needing a book ID. Useful for testing or analyzing text snippets."
           }
         }
       ]

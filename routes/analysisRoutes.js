@@ -6,7 +6,8 @@ const bookService = require("../services/bookService");
 router.post("/:bookId/full", async (req, res) => {
   try {
     const { bookId } = req.params;
-    const { content } = req.body;
+    const { content, options } = req.body;
+    console.log(options);
 
     let bookContent = content;
     let metadata = { title: "Unknown", author: "Unknown" };
@@ -26,7 +27,8 @@ router.post("/:bookId/full", async (req, res) => {
     const analysis = await analysisService.analyzeBook(
       bookContent,
       metadata.title,
-      metadata.author
+      metadata.author,
+      options
     );
     res.json({ bookId, ...metadata, analysis });
   } catch (error) {
