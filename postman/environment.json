@@ -1,0 +1,19 @@
+{
+  "id": "5f7c40a3-c4b4-41e5-9f8d-46b6001f3a8c",
+  "name": "SARJ Book Analysis API Environment",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "bookId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+} 

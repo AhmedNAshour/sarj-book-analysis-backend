@@ -1,0 +1,114 @@
+{
+  "info": {
+    "name": "SARJ Book Analysis API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Collection for testing SARJ Book Analysis API endpoints"
+  },
+  "item": [
+    {
+      "name": "Books",
+      "item": [
+        {
+          "name": "Get Book Content",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/books/:bookId/content",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "books",
+                ":bookId",
+                "content"
+              ],
+              "variable": [
+                {
+                  "key": "bookId",
+                  "value": "your-book-id",
+                  "description": "ID of the book to fetch"
+                }
+              ]
+            },
+            "description": "Fetches the content of a specific book by ID"
+          }
+        },
+        {
+          "name": "Get Book Metadata",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/books/:bookId/metadata",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "books",
+                ":bookId",
+                "metadata"
+              ],
+              "variable": [
+                {
+                  "key": "bookId",
+                  "value": "your-book-id",
+                  "description": "ID of the book to fetch metadata for"
+                }
+              ]
+            },
+            "description": "Fetches metadata of a specific book by ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analysis",
+      "item": [
+        {
+          "name": "Perform Full Analysis",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/analysis/:bookId/full",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analysis",
+                ":bookId",
+                "full"
+              ],
+              "variable": [
+                {
+                  "key": "bookId",
+                  "value": "your-book-id",
+                  "description": "ID of the book to analyze"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Optional book content. If not provided, it will be fetched using bookId\"\n}"
+            },
+            "description": "Performs full analysis on a book by ID or provided content"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ]
+} 
