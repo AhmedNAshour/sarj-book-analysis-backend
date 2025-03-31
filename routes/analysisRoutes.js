@@ -6,23 +6,16 @@ const bookService = require("../services/bookService");
 router.post("/:bookId/full", async (req, res) => {
   try {
     const { bookId } = req.params;
-    const { content, options } = req.body;
+    const { options } = req.body;
     console.log(options);
 
-    let bookContent = content;
-    let metadata = { title: "Unknown", author: "Unknown" };
-
-    // If content is not provided, fetch it
-    if (!bookContent) {
-      if (!bookId) {
-        return res
-          .status(400)
-          .json({ error: "Either bookId or content must be provided" });
-      }
-
-      bookContent = await bookService.fetchBookContent(bookId);
-      metadata = await bookService.fetchBookMetadata(bookId);
+    if (!bookId) {
+      return res.status(400).json({ error: "Book ID is required" });
     }
+
+    // Fetch book content and metadata
+    const bookContent = await bookService.fetchBookContent(bookId);
+    const metadata = await bookService.fetchBookMetadata(bookId);
 
     const analysis = await analysisService.analyzeBook(
       bookContent,

@@ -38,30 +38,16 @@ This directory contains Postman collection and environment files for testing the
 
 - `POST /api/analysis/:bookId/full` - Perform full analysis on a book by ID
 
-  - Uses the book ID to fetch content and metadata
+  - Uses the book ID to fetch content and metadata, if content isn't provided
   - You can configure analysis options in the request body:
     ```json
     {
+      "content": "Your text content here...",
       "options": {
         "modelProvider": "groq", // or "sambanova"
         "includeSummary": true,
         "includeThemes": true,
         "includeCharacters": true,
-        "includeStyleAnalysis": true
-      }
-    }
-    ```
-
-- `POST /api/analysis/custom/full` - Analyze custom text content
-  - Provide your own text content in the request body
-  - Example:
-    ```json
-    {
-      "content": "Your text content here...",
-      "options": {
-        "modelProvider": "groq",
-        "includeSummary": true,
-        "includeThemes": true,
         "includeStyleAnalysis": true
       }
     }
@@ -87,6 +73,3 @@ Then you can start using the collection to test the endpoints.
 2. Then, test the analysis endpoint:
 
    - POST `/api/analysis/:bookId/full` with different option combinations
-
-3. Finally, test the custom analysis endpoint:
-   - POST `/api/analysis/custom/full` with a sample text
