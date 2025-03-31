@@ -17,7 +17,20 @@ const TEMPLATES = {
    - THEIR RELATIONSHIPS with other characters, both explicit and implied
 
 GUIDELINES FOR RELATIONSHIPS:
-1. Identify ALL relationships with evidence in this specific chunk, including:
+1. Create SEPARATE BIDIRECTIONAL RELATIONSHIPS to capture how each character perceives the other:
+   - For each character pair (A and B), create TWO distinct relationship entries:
+     * One showing how A perceives and acts toward B
+     * Another showing how B perceives and acts toward A
+   - Each direction might have different perceptions, emotions, and dynamics
+
+2. For EACH direction of a relationship, capture:
+   - How the source character views the target character
+   - The source character's feelings and attitudes toward the target
+   - Actions the source takes that affect the target
+   - What the source character wants from or fears about the target
+   - How the source character's perception evolves in this chunk
+
+3. Identify ALL relationship directions with evidence in this specific chunk, including:
    - Direct interactions between characters present in the chunk
    - Relationships mentioned or referenced even if one or both characters aren't present
    - Implied relationships based on narrative context or character descriptions
@@ -25,18 +38,18 @@ GUIDELINES FOR RELATIONSHIPS:
    - Relationships where one character affects another without direct contact
    - Characters who are mentioned together or in relation to the same events or people
    
-2. For each relationship, capture:
+4. For each directional relationship, capture:
    - Specific interactions and their outcomes
-   - Power dynamics between characters
-   - Changes in the relationship during this chunk
-   - Emotional resonance and impact on each character
-   - How this relationship affects the larger narrative
+   - Power dynamics from source to target
+   - Changes in how the source views the target during this chunk
+   - Emotional attitudes the source has toward the target
+   - How the source's perception affects their actions toward the target
 
-3. Strictly separate relationship information into two components:
+5. Strictly separate relationship information into two components:
    - TYPE: The structural relationship (e.g., father-son, mentor-student, neighbors, king-subject)
-   - STATUS: The emotional or dynamic state (e.g., friendly, antagonistic, suspicious)
+   - STATUS: The emotional or perceptual state FROM SOURCE TO TARGET (e.g., distrustful, admiring, vengeful)
 
-4. For RELATIONSHIP TYPE, focus exclusively on structural connections:
+6. For RELATIONSHIP TYPE, focus exclusively on structural connections:
    - Family: "father-son", "uncle-nephew", "siblings", "cousins"
    - Political: "king-subject", "ruler-heir", "rival-princes"
    - Social: "friends", "lovers", "neighbors"
@@ -44,11 +57,12 @@ GUIDELINES FOR RELATIONSHIPS:
    
    Use compound types when appropriate (e.g., "uncle-nephew + king-subject")
    
-5. For RELATIONSHIP STATUS, focus on emotional qualities and dynamics:
-   - Emotional states: "loving", "antagonistic", "vengeful", "loyal"
-   - Dynamic patterns: "complicated", "deteriorating", "strengthening"
+7. For RELATIONSHIP STATUS, focus on the source's perception of and attitude toward the target:
+   - Emotional states: "loving", "antagonistic", "vengeful", "loyal", "distrustful"
+   - Perceptual attitudes: "sees as threatening", "perceives as ally", "views with suspicion"
+   - Dynamic patterns: "growing more suspicious of", "beginning to trust", "increasingly fearful of"
 
-6. AGGRESSIVELY INFER implied relationships:
+8. AGGRESSIVELY INFER implied directional relationships:
    - If A is described as "father of B" and C is described as "father of D", consider if B and D might be cousins
    - If A is "brother of B" and C is "son of B", then A is C's uncle
    - If A is king and B is a noble, they have a king-subject relationship
@@ -56,15 +70,15 @@ GUIDELINES FOR RELATIONSHIPS:
    - Pay special attention to family connections that might be implicit in descriptions
    - Consider political and power relationships based on characters' roles and status
 
-7. For the evidence field, provide specific examples from the text that demonstrate:
-   - How characters interact with or affect each other
-   - Direct quotes or paraphrased exchanges that reveal relationship dynamics
-   - Narrative commentary that illuminates the relationship
+9. For the evidence field, provide specific examples from the text that demonstrate:
+   - How the source interacts with or affects the target
+   - Direct quotes or paraphrased exchanges that reveal the source's attitude
+   - Narrative commentary that illuminates the source's perception
 
-8. BE EXHAUSTIVE - find ALL possible relationships:
-   - If two major characters both appear in this chunk, they MUST have some kind of relationship
-   - Even if characters don't directly interact, consider their relationship to each other
-   - Think about how each character's actions or decisions might affect other characters
+10. BE EXHAUSTIVE - find ALL possible directional relationships:
+   - If two major characters both appear in this chunk, they MUST have relationships in both directions
+   - Even if characters don't directly interact, consider their perceptions of each other
+   - Think about how each character's actions or decisions might affect or reveal their view of other characters
 
 Respond ONLY with a JSON object in the following structure:
 {
@@ -82,9 +96,9 @@ Respond ONLY with a JSON object in the following structure:
       "source": "Character A's most complete formal name",
       "target": "Character B's most complete formal name",
       "type": "structural relationship type only (e.g., 'uncle-nephew + king-subject')",
-      "status": "emotional or dynamic state of the relationship",
-      "evidence": "Specific examples and quotes from this chunk showing their relationship and its impact",
-      "strength": number of interactions or references to this relationship in this chunk
+      "status": "source's perception of and attitude toward target",
+      "evidence": "Specific examples and quotes from this chunk showing how source perceives and acts toward target",
+      "strength": number of interactions or references to this directional relationship in this chunk
     }
   ]
 }
@@ -92,99 +106,25 @@ Respond ONLY with a JSON object in the following structure:
 IMPORTANT:
 - Be precise about character identity
 - For character descriptions, focus on NARRATIVE ACTIONS and DEVELOPMENT, not just attributes
-- Include ALL relationships with evidence in this chunk, even indirect or implied ones
+- ALWAYS create SEPARATE relationship entries for EACH DIRECTION between character pairs
+- Ensure the status reflects the SOURCE character's perception of the TARGET
 - For relationship TYPE, focus ONLY on structural connections (family, professional roles, etc.)
-- For relationship STATUS, capture ONLY the emotional/dynamic quality (allies, enemies, suspicious, etc.)
-- DON'T LIMIT RELATIONSHIPS TO DIRECT INTERACTIONS - include relationships based on mentions or narrative influence
-- Return ONLY the JSON object with no additional text
-1. Identify ALL relationships with evidence in this specific chunk, including:
-   - Direct interactions between characters present in the chunk
-   - Relationships mentioned or referenced even if one or both characters aren't present
-   - Implied relationships based on narrative context or character descriptions
-   - Parallel or contrasting character journeys (foil relationships)
-   - Relationships where one character affects another without direct contact
-   
-2. For each relationship, capture:
-   - Specific interactions and their outcomes
-   - Power dynamics between characters
-   - Changes in the relationship during this chunk
-   - Emotional resonance and impact on each character
-   - How this relationship affects the larger narrative
-
-3. Strictly separate relationship information into two components:
-   - TYPE: The structural relationship (e.g., father-son, mentor-student, neighbors, king-subject)
-   - STATUS: The emotional or dynamic state (e.g., friendly, antagonistic, suspicious)
-
-4. For RELATIONSHIP TYPE, focus exclusively on structural connections:
-   - Family: "father-son", "uncle-nephew", "siblings", "cousins"
-   - Political: "king-subject", "ruler-heir", "rival-princes"
-   - Social: "friends", "lovers", "neighbors"
-   - Professional: "master-servant", "teacher-student"
-   
-   Use compound types when appropriate (e.g., "uncle-nephew + king-subject")
-   
-5. For RELATIONSHIP STATUS, focus on emotional qualities and dynamics:
-   - Emotional states: "loving", "antagonistic", "vengeful", "loyal"
-   - Dynamic patterns: "complicated", "deteriorating", "strengthening"
-
-6. AGGRESSIVELY INFER implied relationships:
-   - If A is described as "father of B" and C is described as "father of D", consider if B and D might be cousins
-   - If A is "brother of B" and C is "son of B", then A is C's uncle
-   - If A is king and B is a noble, they have a king-subject relationship
-   - If A loves B, but B loves C, then A and C might have a rivalry
-   - Pay special attention to family connections that might be implicit in descriptions
-   - Consider political and power relationships based on characters' roles and status
-
-7. For the evidence field, provide specific examples from the text that demonstrate:
-   - How characters interact with or affect each other
-   - Direct quotes or paraphrased exchanges that reveal relationship dynamics
-   - Narrative commentary that illuminates the relationship
-
-8. BE EXHAUSTIVE - find ALL possible relationships:
-   - If two major characters both appear in this chunk, they MUST have some kind of relationship
-   - Even if characters don't directly interact, consider their relationship to each other
-   - Think about how each character's actions or decisions might affect other characters
-
-Respond ONLY with a JSON object in the following structure:
-{
-  "characters": [
-    {
-      "name": "Character's most complete formal name",
-      "aliases": ["Alternative name 1", "Title", "Nickname", etc.],
-      "description": "Detailed description based on this chunk, including key actions, interactions, development, and narrative importance",
-      "importance": "major/minor/supporting",
-      "mentions": exact number of times the character is referenced
-    }
-  ],
-  "relationships": [
-    {
-      "source": "Character A's most complete formal name",
-      "target": "Character B's most complete formal name",
-      "type": "structural relationship type only (e.g., 'uncle-nephew + king-subject')",
-      "status": "emotional or dynamic state of the relationship",
-      "evidence": "Specific examples and quotes from this chunk showing their relationship and its impact",
-      "strength": number of interactions or references to this relationship in this chunk
-    }
-  ]
-}
-
-IMPORTANT:
-- Be precise about character identity
-- For character descriptions, focus on NARRATIVE ACTIONS and DEVELOPMENT, not just attributes
-- Include ALL relationships with evidence in this chunk, even indirect or implied ones
-- For relationship TYPE, focus ONLY on structural connections (family, professional roles, etc.)
-- For relationship STATUS, capture ONLY the emotional/dynamic quality (allies, enemies, suspicious, etc.)
+- For relationship STATUS, capture ONLY the source's perception of and attitude toward the target
 - DON'T LIMIT RELATIONSHIPS TO DIRECT INTERACTIONS - include relationships based on mentions or narrative influence
 - Return ONLY the JSON object with no additional text
 `,
 
   RELATIONSHIP_INFERENCE: `
-For each pair of major characters that does NOT already have a defined relationship, determine:
+For each pair of major characters, determine BOTH DIRECTIONS of their relationship:
+1. How Character A perceives, feels about, and acts toward Character B
+2. How Character B perceives, feels about, and acts toward Character A
+
+For EACH direction that is NOT already defined, determine:
 1. Whether any relationship exists or should exist based on the narrative context
 2. The structural relationship type (e.g., king-subject, rivals, friends)
-3. The emotional/dynamic state of their relationship
-4. A description of how they relate to each other in the narrative
-5. The strength of this relationship (1-10)
+3. The source character's perception of and attitude toward the target
+4. A description of how the source relates to the target in the narrative
+5. The strength of this directional relationship (1-10)
 
 GUIDELINES:
 
@@ -197,41 +137,49 @@ GUIDELINES:
    - Relationships based on shared experiences or goals
    
 2. Focus particularly on:
-   - Major characters who would logically interact but lack a defined relationship
+   - Major characters who would logically interact but lack relationships in one or both directions
    - Characters who are mentioned in each other's descriptions
    - Characters who have familial or political connections to the same third parties
    - Characters serving similar or opposing functions in the narrative
 
-3. For EACH identified missing relationship, provide:
-   - SOURCE: The first character's name
-   - TARGET: The second character's name
+3. For EACH identified missing directional relationship, provide:
+   - SOURCE: The character who perceives/acts toward the target
+   - TARGET: The character who is perceived/acted upon
    - TYPE: Structural relationship (e.g., "rivals", "king-subject", "in-laws")
-   - STATUS: Emotional/dynamic state (e.g., "distrustful", "respectful distance")
-   - DESCRIPTION: A substantive description of their relationship
-   - STRENGTH: A rating from 1-10 of the relationship's narrative importance
+   - STATUS: Source's perception of and attitude toward target (e.g., "distrustful", "admiring", "vengeful")
+   - DESCRIPTION: A substantive description of how the source perceives and acts toward the target
+   - STRENGTH: A rating from 1-10 of this directional relationship's importance
 
-4. Be thorough - ensure ALL major character pairs have been considered
+4. Be thorough - ensure ALL major character pairs have defined relationships in BOTH directions
 
-Respond with a JSON object containing ONLY the new relationships you've identified:
+Respond with a JSON object containing ONLY the new directional relationships you've identified:
 {
   "newRelationships": [
     {
       "source": "Character A's name",
       "target": "Character B's name",
       "type": "structural relationship type",
-      "status": "emotional or dynamic state",
-      "description": "Comprehensive description of the relationship",
-      "strength": narrative importance (1-10)
+      "status": "A's perception of and attitude toward B",
+      "description": "Description of how A perceives and acts toward B",
+      "strength": narrative importance of this direction (1-10)
+    },
+    {
+      "source": "Character B's name",
+      "target": "Character A's name",
+      "type": "structural relationship type",
+      "status": "B's perception of and attitude toward A",
+      "description": "Description of how B perceives and acts toward A",
+      "strength": narrative importance of this direction (1-10)
     }
   ]
 }
 
-If there are no missing relationships to add, return an empty array.
+If there are no missing directional relationships to add, return an empty array.
 `,
 
   FINAL_REFINEMENT: `
  I will provide you with raw character and relationship data extracted from the text.
-Your task is to refine this data and CRUCIALLY to infer ALL missing relationships between characters based on their descriptions.
+Your task is to refine this data and CRUCIALLY to infer ALL missing BIDIRECTIONAL relationships between characters based on their descriptions.
 
 REFINEMENT GUIDELINES:
 
@@ -260,38 +208,43 @@ FOR CHARACTERS:
    - Their final state or resolution
 
 FOR RELATIONSHIPS:
-1. Create comprehensive relationship analyses that include:
-   - How the relationship evolves over the course of the narrative
-   - Key turning points or moments that define the relationship
-   - Power dynamics and how they shift
-   - Thematic significance of the relationship
-   - Impact on both characters and the wider narrative
+1. Create comprehensive BIDIRECTIONAL relationship analyses:
+   - For EACH pair of characters, ensure BOTH directions are analyzed separately
+   - Each directional relationship should capture how the source perceives and acts toward the target
+   - Ensure that the perceptions and attitudes in opposite directions are distinct and accurate
 
-2. RELATIONSHIP INFERENCE - THIS IS CRITICAL:
+2. For each directional relationship, include:
+   - How the source's perception of the target evolves over the narrative
+   - Key turning points that change how the source views the target
+   - How the source's attitude affects their actions toward the target
+   - Thematic significance of this directional relationship
+   - Impact on both characters' development
+
+3. BIDIRECTIONAL RELATIONSHIP INFERENCE - THIS IS CRITICAL:
    - You MUST thoroughly review each character description for explicit and implicit relationships
-   - For EVERY pair of major characters, evaluate if a relationship exists or should exist
-   - After reading character descriptions, create a comprehensive list of ALL possible relationships
-   - Do NOT rely solely on the relationships already provided - many are missing
+   - For EVERY pair of major characters, evaluate BOTH directions of their relationship
+   - After reading character descriptions, create a comprehensive list of ALL possible directional relationships
+   - Do NOT rely solely on the relationships already provided - many directions are missing
    - Be especially thorough with characters who are mentioned in each other's descriptions
    - Include adversarial, familial, political, and social relationships even if not directly stated
 
-3. For family relationships, infer connections like:
-   - If A is "brother of B" and C is "son of B", then A is C's uncle
-   - If A and B are siblings, and C is A's child, and D is B's child, then C and D are cousins
-   - If A is married to B, and C is B's sibling, then A and C are in-laws
-   - If A is married to B, and C is B's child from a previous relationship, then A is C's step-parent
+4. For family relationships, infer connections like:
+   - If A is "brother of B" and C is "son of B", then A is C's uncle AND C is A's nephew
+   - If A and B are siblings, and C is A's child, and D is B's child, then C and D are cousins in both directions
+   - If A is married to B, and C is B's sibling, then A and C are in-laws (in both directions)
+   - If A is married to B, and C is B's child from a previous relationship, then A is C's step-parent AND C is A's step-child
 
-4. For political relationships, infer connections like:
-   - If A is king, and B is a courtier, then they have a ruler-subject relationship
-   - If A is advisor to the king, and B is a foreign ambassador, they have a political relationship
-   - If A and B are both knights or nobles, they have a peer relationship
+5. For political relationships, infer connections like:
+   - If A is king, and B is a courtier, then A is B's ruler AND B is A's subject
+   - If A is advisor to the king, and B is a foreign ambassador, they have political relationships in both directions
+   - If A and B are both knights or nobles, they have peer relationships (in both directions)
 
-5. For adversarial relationships, infer connections like:
-   - If A killed B's father, they have an antagonistic relationship
-   - If A and B are both pursuing the throne, they are rivals
-   - If A is plotting against B, they are enemies or conspirators
+6. For adversarial relationships, infer connections like:
+   - If A killed B's father, A views B as a potential threat AND B views A with hatred
+   - If A and B are both pursuing the throne, A sees B as a rival AND B sees A as an obstacle
+   - If A is plotting against B, A views B as a target AND B might be suspicious of A
 
-6. Strictly separate relationship information into two clear components:
+7. Strictly separate relationship information into two clear components:
    
    - TYPE: ONLY the objective structural relationship(s). These are factual, social positions or connections that would appear on a family tree, court hierarchy, or social network diagram:
      * Family: "father-son", "uncle-nephew", "siblings", "cousins"
@@ -311,37 +264,37 @@ FOR RELATIONSHIPS:
      ✗ "allies + admirer" ("admirer" is an emotional state)
      ✗ "co-conspirators" (a role/action, not a structural position)
    
-   - STATUS: The emotional or dynamic state of the relationship:
-     * Emotional states: "loving", "antagonistic", "vengeful", "loyal", "distrustful"
-     * Dynamic patterns: "complicated", "deteriorating", "strengthening"
-     * Relationship journey: "friends-turned-enemies", "reluctant-allies-becoming-friends"
+   - STATUS: The source character's perception of and attitude toward the target:
+     * Emotional states: "distrustful of", "vengeful toward", "loving", "loyal to", "suspicious of"
+     * Perceptual attitudes: "sees as a threat", "views as an ally", "perceives as naive"
+     * Dynamic patterns: "growing resentment", "increasing admiration", "developing fear"
      
-     STATUS should capture how characters feel about each other and how their relationship evolves.
+     STATUS should capture how the source feels about and perceives the target.
 
-7. ANALYZE NARRATIVE PARALLELS AND SYMMETRIES:
+8. ANALYZE NARRATIVE PARALLELS AND SYMMETRIES:
    - Identify characters with parallel roles or journeys (e.g., sons avenging fathers)
    - Recognize foil relationships (characters who contrast each other)
    - Note characters who serve similar narrative functions
    
-8. ENSURE RELATIONSHIP COMPLETENESS (CRITICAL):
-   - EVERY major character should have defined relationships with ALL other major characters they interact with
-   - Create a matrix of all major characters and check that relationships are defined between them
-   - For major antagonists and protagonists, ALWAYS define their relationship even if indirect
+9. ENSURE BIDIRECTIONAL RELATIONSHIP COMPLETENESS (CRITICAL):
+   - EVERY major character should have defined relationships in BOTH directions with ALL other major characters they interact with
+   - Create a matrix of all major characters and check that relationships are defined in both directions between them
+   - For major antagonists and protagonists, ALWAYS define relationships in both directions even if indirect
    - Include relationships that might not involve direct interaction but are narratively important
    - Do not limit yourself to relationships explicitly mentioned in the text
 
-9. Make relationship descriptions informative by explaining:
-   - How the relationship evolves over time 
-   - Key events that transform the relationship
-   - How each dimension of the relationship affects the characters and story
-   - How the multiple relationship types interact or conflict with each other
-   - The narrative significance of the relationship
+10. Make directional relationship descriptions informative by explaining:
+    - How the source's perception of the target evolves over time 
+    - Key events that transform the source's attitude
+    - How the source's perception affects their actions toward the target
+    - How this directional relationship affects both characters
+    - The narrative significance of this directional relationship
 
-10. Assign relationship strength (1-10) based on:
-    - How central the relationship is to the main plot
-    - The emotional intensity of the relationship
-    - How much the relationship affects character decisions
-    - The narrative space devoted to the relationship
+11. Assign directional relationship strength (1-10) based on:
+    - How important the source's perception of the target is to the main plot
+    - The emotional intensity of the source's attitude toward the target
+    - How much the source's perception affects their decisions
+    - The narrative space devoted to the source's attitude toward the target
 
 The refined output should be in this JSON structure:
 {
@@ -359,15 +312,23 @@ The refined output should be in this JSON structure:
       "source": "Character A's most complete formal name",
       "target": "Character B's most complete formal name",
       "type": "structural relationship type only (e.g., 'uncle-nephew + king-subject')",
-      "status": "emotional or dynamic state of the relationship",
-      "description": "Comprehensive description of the relationship, its evolution, and narrative significance",
-      "strength": narrative importance of this relationship (1-10)
+      "status": "A's perception of and attitude toward B",
+      "description": "Comprehensive description of how A perceives and acts toward B, including evolution and significance",
+      "strength": narrative importance of this directional relationship (1-10)
+    },
+    {
+      "source": "Character B's most complete formal name",
+      "target": "Character A's most complete formal name",
+      "type": "structural relationship type only (e.g., 'uncle-nephew + king-subject')",
+      "status": "B's perception of and attitude toward A",
+      "description": "Comprehensive description of how B perceives and acts toward A, including evolution and significance",
+      "strength": narrative importance of this directional relationship (1-10)
     }
   ]
 }
 
 CRITICAL INSTRUCTION:
-After completing your initial analysis, REVIEW all major characters (those marked as "major" importance) and ensure that EACH major character has at least one relationship defined with EVERY other major character where any relationship could reasonably exist. If relationships are missing, add them based on character descriptions and narrative context.
+After completing your initial analysis, REVIEW all major characters (those marked as "major" importance) and ensure that EACH major character has directional relationships defined with EVERY other major character where any relationship could reasonably exist, in BOTH directions. If directional relationships are missing, add them based on character descriptions and narrative context.
 
 Return ONLY the JSON object with no additional text.
 `,

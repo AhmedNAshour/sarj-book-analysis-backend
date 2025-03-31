@@ -145,6 +145,15 @@ function createFinalResult(
   chunksProcessed,
   consistencyKey
 ) {
+  // Count bidirectional relationship pairs
+  const relationshipPairs = new Set();
+  results.relationships.forEach((rel) => {
+    const pair = [rel.source.toLowerCase(), rel.target.toLowerCase()]
+      .sort()
+      .join("|");
+    relationshipPairs.add(pair);
+  });
+
   return {
     title,
     author,
@@ -155,6 +164,8 @@ function createFinalResult(
       chunksProcessed,
       characterCount: results.characters.length,
       relationshipCount: results.relationships.length,
+      relationshipPairsCount: relationshipPairs.size,
+      bidirectionalAnalysis: true,
       analysisDate: new Date().toISOString(),
     },
   };

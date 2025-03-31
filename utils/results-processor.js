@@ -125,17 +125,16 @@ function mergeRelationship(
   relationship,
   chunkIndex
 ) {
-  // Create a more specific relationship key that includes both characters
+  // Create a directional relationship key that preserves source-target direction
   const source = relationship.source.toLowerCase();
   const target = relationship.target.toLowerCase();
-  const sortedNames = [source, target].sort();
-  const baseKey = `${sortedNames[0]}|${sortedNames[1]}`;
+  const directionKey = `${source}|${target}`;
   const typeKey = relationship.type
     ? relationship.type.toLowerCase()
     : "unknown";
-  const key = `${baseKey}|${typeKey}`;
+  const key = `${directionKey}|${typeKey}`;
 
-  // Check if we already have this relationship pair and type
+  // Check if we already have this directional relationship
   if (!relationshipMap.has(key)) {
     relationship.firstAppearance = chunkIndex;
     relationship.lastAppearance = chunkIndex;
@@ -157,7 +156,7 @@ function updateExistingRelationship(existingRel, relationship, chunkIndex) {
   existingRel.lastAppearance = chunkIndex;
   existingRel.chunkAppearances.push(chunkIndex);
 
-  // Update strength
+  // Update strength (only for the specific direction)
   existingRel.strength += relationship.strength;
 
   // Merge status information if available and new
