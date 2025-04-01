@@ -1,4 +1,4 @@
-// prompts.js - Improved version
+// prompts.js - Improved version with interaction tracking
 const TEMPLATES = {
   // First chunk prompt focuses on establishing baseline character and relationship data
   FIRST_CHUNK_EXTRACTION: `
@@ -72,6 +72,37 @@ GUIDELINES FOR RELATIONSHIPS IN FIRST CHUNK:
    - Even if characters don't directly interact, consider their perceptions of each other
    - Think about how each character's actions or decisions might affect or reveal their view of other characters
 
+GUIDELINES FOR IDENTIFYING CHARACTER INTERACTIONS:
+
+1. DEFINE WHAT COUNTS AS AN INTERACTION:
+   - Direct conversation between characters
+   - Physical interaction (fighting, embracing, etc.)
+   - Direct observation (one character watching/noticing another)
+   - Significant reference (one character discussing another by name)
+   - Joint participation in a scene or event
+   
+2. FOR EACH INTERACTION, CAPTURE:
+   - The exact characters involved (their formal names)
+   - Brief description of what happened
+   - The context/setting where it occurred
+   - The type of interaction (conversation, physical, observation, etc.)
+   
+3. DO NOT INCLUDE:
+   - Hypothetical interactions
+   - Interactions described in backstory but not occurring in this chunk
+   - Implied relationships without actual interaction
+   - Vague references without specific characters named
+
+EXAMPLES OF VALID INTERACTIONS:
+- "Hamlet speaks directly to Ophelia in her chamber"
+- "Claudius and Gertrude announce their marriage to the court"
+- "Laertes physically attacks Hamlet during Ophelia's funeral"
+
+EXAMPLES OF INVALID INTERACTIONS:
+- "Hamlet thinks about Yorick" (one character is deceased)
+- "Hamlet cares for Ophelia" (too vague, need specific interaction)
+- "Claudius fears Hamlet might discover the truth" (internal thought, not interaction)
+
 Respond ONLY with a JSON object in the following structure:
 {
   "characters": [
@@ -93,7 +124,7 @@ Respond ONLY with a JSON object in the following structure:
       "status": "source's perception of and attitude toward target",
       "description": "Narrative overview of how source perceives and relates to target",
       "evidence": "Specific examples and quotes from this chunk showing how source perceives and acts toward target",
-      "strength": number of interactions or references to this directional relationship in this chunk
+      "numberOfInteractions": number of explicit interactions between these characters in this chunk
     },
     {
       "source": "Character B's most complete formal name",
@@ -102,7 +133,15 @@ Respond ONLY with a JSON object in the following structure:
       "status": "target's perception of and attitude toward source",
       "description": "Narrative overview of how target perceives and relates to source",
       "evidence": "Specific examples and quotes from this chunk showing how target perceives and acts toward source",
-      "strength": number of interactions or references to this directional relationship in this chunk
+      "numberOfInteractions": number of explicit interactions between these characters in this chunk
+    }
+  ],
+  "interactions": [
+    {
+      "characters": ["Character A's formal name", "Character B's formal name"],
+      "description": "Brief description of what happened between these characters",
+      "context": "Scene/location/setting where the interaction occurred",
+      "type": "conversation|physical|observation|reference|joint-participation"
     }
   ]
 }
@@ -113,6 +152,7 @@ IMPORTANT:
 - ALWAYS create SEPARATE relationship entries for EACH DIRECTION between character pairs
 - Ensure the status reflects the SOURCE character's perception of the TARGET
 - Include relationships for ALL character pairs where any relationship can be inferred
+- Track ALL explicit interactions in the interactions array
 - Return ONLY the JSON object with no additional text
 `,
 
@@ -155,7 +195,7 @@ GUIDELINES FOR RELATIONSHIP EVOLUTION IN THIS CHUNK:
      * UPDATE the relationship status if it has changed in this chunk
      * EXPAND the description to include new developments
      * ADD new evidence from this chunk
-     * ADJUST the strength based on new interactions
+     * INCREMENT numberOfInteractions based on new interactions in this chunk
    
 2. COMPLETE BIDIRECTIONAL RELATIONSHIPS:
    - CRITICAL: For EVERY relationship found in EITHER previous chunks OR this chunk:
@@ -187,6 +227,39 @@ GUIDELINES FOR RELATIONSHIP EVOLUTION IN THIS CHUNK:
    - ENSURE relationship status captures emotional/perceptual states only
    - PROVIDE rich, narrative-focused descriptions that show evolution over time
    - INCLUDE specific evidence from the current chunk
+   - COUNT all explicit interactions in the numberOfInteractions field
+
+GUIDELINES FOR TRACKING INTERACTIONS IN THIS CHUNK:
+
+1. IDENTIFY ALL NEW INTERACTIONS in this chunk:
+   - Focus only on interactions that occur in THIS CHUNK
+   - Record each distinct interaction between characters
+   - Be specific about what happened and the context
+   - Categorize the type of interaction appropriately
+   
+2. WHAT COUNTS AS AN INTERACTION:
+   - Direct conversation between characters
+   - Physical interaction (fighting, embracing, etc.)
+   - Direct observation (one character watching/noticing another)
+   - Significant reference (one character discussing another by name)
+   - Joint participation in a scene or event
+   
+3. FOR MULTIPLE CHARACTERS in a single scene:
+   - If more than two characters interact in a scene, create separate interaction entries for each important pair
+   - For group scenes, record the most significant pairwise interactions
+   - If a character addresses a group, create interactions with each character who responds
+   
+4. INTERACTION DETAILS TO CAPTURE:
+   - Characters involved (using their formal names)
+   - Brief but specific description of the interaction
+   - The setting or context where it occurred
+   - The nature or type of the interaction
+   
+5. DO NOT INCLUDE:
+   - Interactions already recorded from previous chunks
+   - Hypothetical interactions
+   - Implied interactions without textual evidence
+   - Interactions mentioned only in backstory
 
 CRITICAL INSTRUCTIONS FOR USING PREVIOUS CHUNK CONTEXT:
 
@@ -221,7 +294,15 @@ Respond ONLY with a JSON object in the following structure:
       "status": "source's perception of and attitude toward target, updated based on new developments",
       "description": "Evolving narrative overview of how source perceives and relates to target",
       "evidence": "Specific examples and quotes showing how source perceives and acts toward target",
-      "strength": updated strength based on all interactions
+      "numberOfInteractions": updated count of explicit interactions between these characters
+    }
+  ],
+  "interactions": [
+    {
+      "characters": ["Character A's formal name", "Character B's formal name"],
+      "description": "Brief description of what happened between these characters in this chunk",
+      "context": "Scene/location/setting where the interaction occurred",
+      "type": "conversation|physical|observation|reference|joint-participation"
     }
   ]
 }
@@ -229,6 +310,7 @@ Respond ONLY with a JSON object in the following structure:
 IMPORTANT:
 - Create a COMPLETE bidirectional network of relationships between all major characters
 - Focus on character and relationship EVOLUTION across chunks
+- Record ALL new interactions that occur in this chunk
 - Return ONLY the JSON object with no additional text
 `,
 
@@ -358,18 +440,27 @@ FOR RELATIONSHIPS:
    - Include relationships that might not involve direct interaction but are narratively important
    - Do not limit yourself to relationships explicitly mentioned in the text
 
-11. Make directional relationship descriptions informative by explaining:
-    - How the source's perception of the target evolves over time 
-    - Key events that transform the source's attitude
-    - How the source's perception affects their actions toward the target
-    - How this directional relationship affects both characters
-    - The narrative significance of this directional relationship
+11. For numberOfInteractions field:
+    - DO NOT MODIFY the "numberOfInteractions" field - this is a precise count of times characters interacted
+    - Use this count when evaluating the depth and frequency of character interactions
+    - Ensure your relationship descriptions align with the interaction counts
 
-12. Assign directional relationship strength (1-10) based on:
-    - How important the source's perception of the target is to the main plot
-    - The emotional intensity of the source's attitude toward the target
-    - How much the source's perception affects their decisions
-    - The narrative space devoted to the source's attitude toward the target
+12. When analyzing the interactions:
+    - Use the "numberOfInteractions" field as reference for actual interaction frequency
+    - Ensure your relationship descriptions align with the interaction counts (relationships with many interactions should have more detailed descriptions)
+    - For relationships with many interactions but little narrative importance, note this discrepancy
+    - For relationships with few interactions but high narrative importance, explain why
+
+FOR INTERACTION ANALYSIS:
+1. Review all interactions to identify patterns:
+   - Which characters interact most frequently
+   - How interaction types evolve over the narrative
+   - Key turning points marked by significant interactions
+   - Scenes with multiple character interactions that drive the plot forward
+
+2. DO NOT MODIFY THE INTERACTIONS ARRAY:
+   - The interactions array contains the raw data of all detected interactions
+   - This is important historical data that should be preserved exactly as provided
 
 The refined output should be in this JSON structure:
 {
@@ -392,17 +483,20 @@ The refined output should be in this JSON structure:
       "status": "A's perception of and attitude toward B",
       "description": "Comprehensive description of how A perceives and acts toward B, including evolution and significance",
       "evidence": "Specific examples and quotes showing how A relates to B",
-      "strength": narrative importance of this directional relationship (1-10)
+      "numberOfInteractions": exact count of interactions between these characters (DO NOT MODIFY)
     },
     {
       "source": "Character B's most complete formal name",
       "target": "Character A's most complete formal name",
-      "type": "structural relationship type only (e.g., 'uncle-nephew + king-subject')",
+      "type": "structural relationship type only (e.g., 'nephew-uncle + subject-king')",
       "status": "B's perception of and attitude toward A",
       "description": "Comprehensive description of how B perceives and acts toward A, including evolution and significance",
       "evidence": "Specific examples and quotes showing how B relates to A",
-      "strength": narrative importance of this directional relationship (1-10)
+      "numberOfInteractions": exact count of interactions between these characters (DO NOT MODIFY)
     }
+  ],
+  "interactions": [
+    // Preserve all interaction entries exactly as provided - DO NOT MODIFY
   ]
 }
 
@@ -535,6 +629,20 @@ function buildContextSummary(previousResults, chunkIndex) {
       )}`
     : "";
 
+  // Format interaction summaries
+  const interactionSummary =
+    previousResults.interactions && previousResults.interactions.length
+      ? `\n\nKEY INTERACTIONS FROM PREVIOUS CHUNKS:\n${previousResults.interactions
+          .slice(-10)
+          .map(
+            (interaction) =>
+              `- ${interaction.characters.join(" & ")}: ${
+                interaction.description
+              } (${interaction.type})`
+          )
+          .join("\n")}`
+      : "";
+
   return `
   CHARACTERS FROM PREVIOUS CHUNKS:
   ${characterSummaries}
@@ -542,6 +650,7 @@ function buildContextSummary(previousResults, chunkIndex) {
   ESTABLISHED RELATIONSHIPS:
   ${relationshipSummaries}
   ${missingRelationshipsSummary}
+  ${interactionSummary}
   `;
 }
 
@@ -563,11 +672,44 @@ function createRelationshipInferencePrompt(title, author) {
  * Creates a final refinement prompt
  */
 function createFinalRefinementPrompt(title, author) {
-  return `
-  You are a literary analysis expert finalizing an analysis of "${title}" by ${author}".
-  
-  ${TEMPLATES.FINAL_REFINEMENT}
-  `;
+  return `You are a literary analysis expert performing the final refinement of character and relationship analysis for "${title}" by ${author}".
+
+GUIDELINES FOR FINAL REFINEMENT:
+
+1. CHARACTER REFINEMENT:
+   - Ensure all character descriptions are complete and accurate
+   - Verify character importance levels are appropriate
+   - Consolidate and deduplicate character information
+   - Ensure all character roles and actions are properly listed
+
+2. RELATIONSHIP REFINEMENT:
+   - Verify all relationships are bidirectional
+   - Ensure relationship types and statuses are accurate
+   - Consolidate relationship descriptions and evidence
+   - Remove any duplicate or inconsistent relationships
+
+3. INTERACTION ANALYSIS AND RELATIONSHIP CREATION:
+   - Carefully analyze ALL interactions in the interactions list
+   - For each interaction, identify ALL character pairs involved
+   - For each character pair in an interaction:
+     * If no relationship exists between them, create bidirectional relationships
+     * If a relationship exists but is missing one direction, add the missing direction
+     * Ensure the relationship type reflects their interaction patterns
+     * Update the relationship status based on their interactions
+     * Include evidence from the interactions in the relationship descriptions
+
+4. RELATIONSHIP EVIDENCE:
+   - For each relationship, include specific examples from interactions
+   - Quote relevant passages from the interactions
+   - Describe how the interactions demonstrate the relationship type and status
+
+5. COMPLETENESS CHECK:
+   - Every character pair that appears together in an interaction MUST have a relationship
+   - Every relationship MUST be bidirectional
+   - Every relationship MUST have evidence from interactions
+   - Every relationship MUST have an accurate type and status
+
+Respond ONLY with a JSON object containing the refined characters, relationships, and interactions.`;
 }
 
 module.exports = {

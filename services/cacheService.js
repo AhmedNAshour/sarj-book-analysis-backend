@@ -13,10 +13,24 @@ function sanitizeAnalysisData(analysis) {
         source: String(rel.source || ""),
         target: String(rel.target || ""),
         type: String(rel.type || ""),
-        strength: Number(isNaN(rel.strength) ? 0 : rel.strength),
         status: String(rel.status || ""),
         description: String(rel.description || ""),
         evidence: String(rel.evidence || ""),
+      }))
+    : [];
+
+  // Handle interactions sanitization
+  const sanitizedInteractions = Array.isArray(analysis.interactions)
+    ? analysis.interactions.map((interaction) => ({
+        characters: Array.isArray(interaction.characters)
+          ? interaction.characters.map(String)
+          : [],
+        description: String(interaction.description || ""),
+        context: String(interaction.context || ""),
+        type: String(interaction.type || ""),
+        chunkIndex: Number(
+          isNaN(interaction.chunkIndex) ? 0 : interaction.chunkIndex
+        ),
       }))
     : [];
 
@@ -62,6 +76,7 @@ function sanitizeAnalysisData(analysis) {
     author: String(analysis.author || ""),
     characters: sanitizedCharacters,
     relationships: sanitizedRelationships,
+    interactions: sanitizedInteractions,
     meta,
   };
 }

@@ -16,6 +16,7 @@ function mergeResults(chunkResults) {
   // Combine all characters and relationships from chunk results
   const allCharacters = [];
   const allRelationships = [];
+  const allInteractions = [];
 
   // Process each chunk result
   chunkResults.forEach((result, chunkIndex) => {
@@ -37,6 +38,22 @@ function mergeResults(chunkResults) {
         );
       });
     }
+
+    // Process interactions
+    if (result.interactions) {
+      result.interactions.forEach((interaction) => {
+        // Add chunk index to the interaction for context tracking
+        //Check if interaction does not already exist in allInteractions, using interaction.description as the id
+        if (
+          !allInteractions.some(
+            (i) => i.description === interaction.description
+          )
+        ) {
+          interaction.chunkIndex = chunkIndex;
+          allInteractions.push(interaction);
+        }
+      });
+    }
   });
 
   // Calculate character arcs
@@ -45,10 +62,80 @@ function mergeResults(chunkResults) {
   // Calculate relationship arcs
   allRelationships.forEach(processRelationshipArcs);
 
+  // Update relationship with interaction counts
+  updateRelationshipsWithInteractionCounts(allRelationships, allInteractions);
+
   return {
     characters: allCharacters,
     relationships: allRelationships,
+    interactions: allInteractions,
   };
+}
+
+/**
+ * Updates relationship objects with interaction counts based on the interactions array
+ * @param {Array} relationships - Array of relationship objects
+ * @param {Array} interactions - Array of interaction objects
+ */
+function updateRelationshipsWithInteractionCounts(relationships, interactions) {
+  // Create a map to count interactions between character pairs
+  const interactionCountMap = new Map();
+
+  // Count interactions for each character pair
+  interactions.forEach((interaction) => {
+    // Skip interactions with less than 2 characters
+    if (!interaction.characters || interaction.characters.length < 2) {
+      return;
+    }
+
+    // For each pair of characters in the interaction
+    for (let i = 0; i < interaction.characters.length; i++) {
+      for (let j = i + 1; j < interaction.characters.length; j++) {
+        const sourceChar = interaction.characters[i];
+        const targetChar = interaction.characters[j];
+
+        // Create keys for both directions
+        const keyAB = `${sourceChar.toLowerCase()}|${targetChar.toLowerCase()}`;
+        const keyBA = `${targetChar.toLowerCase()}|${sourceChar.toLowerCase()}`;
+
+        // Increment counts
+        interactionCountMap.set(
+          keyAB,
+          (interactionCountMap.get(keyAB) || 0) + 1
+        );
+        interactionCountMap.set(
+          keyBA,
+          (interactionCountMap.get(keyBA) || 0) + 1
+        );
+      }
+    }
+  });
+
+  // Update relationship objects with interaction counts
+  relationships.forEach((relationship) => {
+    const source = relationship.source.toLowerCase();
+    const target = relationship.target.toLowerCase();
+    const key = `${source}|${target}`;
+
+    // If we have interaction count data, use it to update numberOfInteractions
+    // Otherwise, keep whatever value is already in the relationship
+    const interactionCount = interactionCountMap.get(key);
+    if (interactionCount !== undefined) {
+      relationship.numberOfInteractions = interactionCount;
+    } else if (!relationship.numberOfInteractions) {
+      relationship.numberOfInteractions = 0;
+    }
+
+    // If there's a strength field and no numberOfInteractions field,
+    // move the value to numberOfInteractions and delete strength
+    if (
+      relationship.strength !== undefined &&
+      relationship.numberOfInteractions === undefined
+    ) {
+      relationship.numberOfInteractions = relationship.strength;
+      delete relationship.strength;
+    }
+  });
 }
 
 /**
@@ -168,6 +255,18 @@ function mergeRelationship(
     relationship.firstAppearance = chunkIndex;
     relationship.lastAppearance = chunkIndex;
     relationship.chunkAppearances = [chunkIndex];
+
+    // Ensure we're using numberOfInteractions instead of strength
+    if (
+      relationship.strength !== undefined &&
+      relationship.numberOfInteractions === undefined
+    ) {
+      relationship.numberOfInteractions = relationship.strength;
+      delete relationship.strength;
+    } else if (relationship.numberOfInteractions === undefined) {
+      relationship.numberOfInteractions = 0;
+    }
+
     relationshipMap.set(key, relationship);
     allRelationships.push(relationship);
   } else {
@@ -185,8 +284,24 @@ function updateExistingRelationship(existingRel, relationship, chunkIndex) {
   existingRel.lastAppearance = chunkIndex;
   existingRel.chunkAppearances.push(chunkIndex);
 
-  // Update strength (only for the specific direction)
-  existingRel.strength += relationship.strength;
+  // Update numberOfInteractions (formerly strength)
+  if (relationship.numberOfInteractions !== undefined) {
+    if (existingRel.numberOfInteractions === undefined) {
+      existingRel.numberOfInteractions = 0;
+    }
+    existingRel.numberOfInteractions += relationship.numberOfInteractions;
+  } else if (relationship.strength !== undefined) {
+    // Handle the legacy strength field
+    if (existingRel.numberOfInteractions === undefined) {
+      existingRel.numberOfInteractions = 0;
+    }
+    existingRel.numberOfInteractions += relationship.strength;
+  }
+
+  // Remove any leftover strength field
+  if (existingRel.strength !== undefined) {
+    delete existingRel.strength;
+  }
 
   // Merge status information if available and new
   if (relationship.status) {
@@ -318,6 +433,19 @@ function normalizeCharacterNames(results) {
     }
   });
 
+  // Normalize interaction character names
+  if (results.interactions && Array.isArray(results.interactions)) {
+    results.interactions.forEach((interaction) => {
+      if (interaction.characters && Array.isArray(interaction.characters)) {
+        interaction.characters = interaction.characters.map((charName) => {
+          const lowerName = charName.toLowerCase();
+          const canonicalName = nameVariationMap.get(lowerName);
+          return canonicalName || charName; // Use canonical name if available, otherwise keep original
+        });
+      }
+    });
+  }
+
   // Apply alias updates
   aliasUpdates.forEach((aliasSet, characterNameLower) => {
     const character = characterMap.get(characterNameLower);
@@ -356,6 +484,20 @@ function parseOrReturnOriginal(jsonContent, originalData, context) {
  * Refines final results using the LLM
  */
 async function refineResults(client, modelName, rawResults, title, author) {
+  // Store the interaction counts before refinement to ensure they're preserved
+  const interactionCounts = new Map();
+  if (rawResults.relationships) {
+    rawResults.relationships.forEach((rel) => {
+      const key = `${rel.source.toLowerCase()}|${rel.target.toLowerCase()}`;
+      if (rel.numberOfInteractions !== undefined) {
+        interactionCounts.set(key, rel.numberOfInteractions);
+      } else if (rel.strength !== undefined) {
+        // Handle legacy data that might still use strength
+        interactionCounts.set(key, rel.strength);
+      }
+    });
+  }
+
   // Convert raw results to JSON string for the prompt
   const resultsJson = JSON.stringify(rawResults, null, 2);
 
@@ -368,7 +510,7 @@ async function refineResults(client, modelName, rawResults, title, author) {
       modelName,
       systemPrompt,
       userPrompt,
-      { maxTokens: 20000 }
+      { maxTokens: 80000 }
     );
 
     const jsonContent = extractJSON(content);
@@ -377,6 +519,22 @@ async function refineResults(client, modelName, rawResults, title, author) {
       rawResults,
       "refinement"
     );
+
+    // Restore interaction counts to refined relationships
+    if (parsedResults.relationships) {
+      parsedResults.relationships.forEach((rel) => {
+        const key = `${rel.source.toLowerCase()}|${rel.target.toLowerCase()}`;
+        const count = interactionCounts.get(key);
+        if (count !== undefined) {
+          rel.numberOfInteractions = count;
+        }
+      });
+    }
+
+    // Restore interactions to refined results
+    if (parsedResults.interactions) {
+      parsedResults.interactions = rawResults.interactions;
+    }
 
     // Normalize character names to ensure consistency
     return normalizeCharacterNames(parsedResults);

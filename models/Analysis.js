@@ -39,12 +39,6 @@ const RelationshipSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
-  strength: {
-    type: Number,
-    default: 0,
-    min: 0,
-    max: 10,
-  },
   status: {
     type: String,
     trim: true,
@@ -56,6 +50,34 @@ const RelationshipSchema = new mongoose.Schema({
   evidence: {
     type: String,
     trim: true,
+  },
+});
+
+// Interaction schema
+const InteractionSchema = new mongoose.Schema({
+  characters: {
+    type: [String],
+    required: [true, "Characters involved in the interaction are required"],
+  },
+  description: {
+    type: String,
+    required: [true, "Interaction description is required"],
+    trim: true,
+  },
+  context: {
+    type: String,
+    required: [true, "Interaction context is required"],
+    trim: true,
+  },
+  type: {
+    type: String,
+    required: [true, "Interaction type is required"],
+    trim: true,
+  },
+  chunkIndex: {
+    type: Number,
+    required: [true, "Chunk index is required"],
+    min: 0,
   },
 });
 
@@ -117,6 +139,7 @@ const AnalysisSchema = new mongoose.Schema(
     },
     characters: [CharacterSchema],
     relationships: [RelationshipSchema],
+    interactions: [InteractionSchema],
     meta: {
       type: MetaDataSchema,
       default: () => ({}),

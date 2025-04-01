@@ -59,17 +59,20 @@ async function processChunk(
         relationships: Array.isArray(parsed.relationships)
           ? parsed.relationships
           : [],
+        interactions: Array.isArray(parsed.interactions)
+          ? parsed.interactions
+          : [],
       };
     } catch (parseError) {
       logParsingError(parseError, jsonContent, chunkIndex, totalChunks);
-      return { characters: [], relationships: [] };
+      return { characters: [], relationships: [], interactions: [] };
     }
   } catch (error) {
     console.warn(
       `Error processing chunk ${chunkIndex + 1}/${totalChunks}:`,
       error.message
     );
-    return { characters: [], relationships: [] };
+    return { characters: [], relationships: [], interactions: [] };
   }
 }
 
