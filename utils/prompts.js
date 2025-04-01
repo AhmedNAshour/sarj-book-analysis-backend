@@ -453,9 +453,7 @@ function buildContextSummary(previousResults, chunkIndex) {
   }
 
   // Extract major and supporting characters for focused context
-  const significantCharacters = previousResults.characters.filter(
-    (char) => char.importance === "major" || char.importance === "supporting"
-  );
+  const significantCharacters = previousResults.characters;
 
   // Create a matrix of existing relationships for completeness checking
   const relationshipMatrix = new Map();

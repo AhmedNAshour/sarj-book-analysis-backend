@@ -4,8 +4,7 @@ const { chunkContent } = require("../utils/content-processor");
 const { processChunk } = require("../utils/character-analyzer");
 const {
   mergeResults,
-  enhancedRefineFinalResults,
-  inferRelationships,
+  refineResults,
   normalizeCharacterNames,
 } = require("../utils/results-processor");
 const {
@@ -118,20 +117,10 @@ async function analyzeBook(content, title, author, options) {
 
     // Enhanced final refinement with LLM
     console.log("Performing enhanced final refinement with LLM");
-    const refinedResults = await enhancedRefineFinalResults(
+    const refinedResults = await refineResults(
       client,
       modelName,
       result,
-      title,
-      author
-    );
-
-    // Perform a dedicated relationship inference pass to catch any missing relationships
-    console.log("Performing relationship inference pass");
-    const resultWithInferredRelationships = await inferRelationships(
-      client,
-      modelName,
-      refinedResults,
       title,
       author
     );

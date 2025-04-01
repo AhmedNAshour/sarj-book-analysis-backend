@@ -340,88 +340,6 @@ function normalizeCharacterNames(results) {
 }
 
 /**
- * Infers relationships between characters
- */
-async function inferRelationships(client, modelName, results, title, author) {
-  // Create a list of existing relationship pairs for quick lookup
-  const existingRelationships = new Set();
-  results.relationships.forEach((rel) => {
-    const pair = [rel.source.toLowerCase(), rel.target.toLowerCase()]
-      .sort()
-      .join("|");
-    existingRelationships.add(pair);
-  });
-
-  const systemPrompt = prompts.createRelationshipInferencePrompt(title, author);
-  const resultsJson = JSON.stringify(results, null, 2);
-  const userPrompt = `Here are the current analysis results for "${title}" by ${author}". Please identify any missing relationships between major characters:\n\n${resultsJson}`;
-
-  try {
-    const content = await generateCompletion(
-      client,
-      modelName,
-      systemPrompt,
-      userPrompt
-    );
-    const jsonContent = extractJSON(content);
-
-    try {
-      const inferredRelations = JSON.parse(jsonContent);
-      console.log(
-        `Identified ${
-          inferredRelations.newRelationships?.length || 0
-        } new relationships`
-      );
-
-      // Combine the original and new relationships
-      if (
-        inferredRelations.newRelationships &&
-        inferredRelations.newRelationships.length > 0
-      ) {
-        // Ensure new relationships have both fields but don't copy between them
-        const normalizedRelationships = inferredRelations.newRelationships.map(
-          (rel) => {
-            // Clone the relationship to avoid modifying the original
-            const normalizedRel = { ...rel };
-
-            // Set empty string for missing fields but don't copy between them
-            if (!normalizedRel.description) {
-              normalizedRel.description = "";
-            }
-
-            if (!normalizedRel.evidence) {
-              normalizedRel.evidence = "";
-            }
-
-            return normalizedRel;
-          }
-        );
-
-        results.relationships = [
-          ...results.relationships,
-          ...normalizedRelationships,
-        ];
-      }
-
-      // Apply name normalization to ensure consistency
-      return normalizeCharacterNames(results);
-    } catch (parseError) {
-      console.warn(
-        "JSON parse error in relationship inference:",
-        parseError.message
-      );
-      console.warn("Attempted to parse:", jsonContent);
-      // Return original results with name normalization applied
-      return normalizeCharacterNames(results);
-    }
-  } catch (error) {
-    console.warn("Error in relationship inference:", error.message);
-    // Return original results with name normalization applied
-    return normalizeCharacterNames(results);
-  }
-}
-
-/**
  * Helper function to parse JSON or return original data on error
  */
 function parseOrReturnOriginal(jsonContent, originalData, context) {
@@ -437,13 +355,7 @@ function parseOrReturnOriginal(jsonContent, originalData, context) {
 /**
  * Refines final results using the LLM
  */
-async function enhancedRefineFinalResults(
-  client,
-  modelName,
-  rawResults,
-  title,
-  author
-) {
+async function refineResults(client, modelName, rawResults, title, author) {
   // Convert raw results to JSON string for the prompt
   const resultsJson = JSON.stringify(rawResults, null, 2);
 
@@ -476,7 +388,6 @@ async function enhancedRefineFinalResults(
 
 module.exports = {
   mergeResults,
-  enhancedRefineFinalResults,
-  inferRelationships,
+  refineResults,
   normalizeCharacterNames,
 };
