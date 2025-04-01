@@ -17,27 +17,27 @@ function chunkContent(content, maxChunkSize = config.chunking.defaultSize) {
   }
 
   const chunks = [];
+  let position = 0;
   const totalLength = cleanContent.length;
 
-  // Calculate optimal chunk size to get evenly sized chunks
-  let optimalChunkCount = Math.ceil(totalLength / maxChunkSize);
-  let optimalChunkSize = Math.ceil(totalLength / optimalChunkCount);
+  // Create chunks that maximize the use of available size
+  while (position < totalLength) {
+    // Calculate potential end position using max chunk size
+    let end = Math.min(position + maxChunkSize, totalLength);
 
-  // Create chunks of optimal size with intelligent boundaries
-  for (let i = 0; i < totalLength; i += optimalChunkSize) {
-    // Calculate end position
-    let end = Math.min(i + optimalChunkSize, totalLength);
-
-    // If we're not at the end of the content, try to find a better break point
+    // If we're not at the end of the content, find better break point
     if (end < totalLength) {
-      end = findBestBreakPoint(cleanContent, i, end, optimalChunkSize);
+      end = findBestBreakPoint(cleanContent, position, end, maxChunkSize);
     }
 
     // Extract the chunk and trim whitespace
-    const chunk = cleanContent.slice(i, end).trim();
+    const chunk = cleanContent.slice(position, end).trim();
     if (chunk) {
       chunks.push(chunk);
     }
+
+    // Move to the next position
+    position = end;
   }
 
   // Log chunk sizes for debugging
@@ -55,28 +55,51 @@ function chunkContent(content, maxChunkSize = config.chunking.defaultSize) {
  * @param {string} content - The full content
  * @param {number} start - Start position of current chunk
  * @param {number} end - Target end position
- * @param {number} chunkSize - The optimal chunk size
+ * @param {number} chunkSize - The chunk size
  * @returns {number} The adjusted end position
  */
 function findBestBreakPoint(content, start, end, chunkSize) {
-  // Look for natural break points within a window
+  // Calculate a reasonable lookback window (bigger for larger chunks)
+  // Make lookback proportional to chunk size, but with a reasonable minimum and maximum
   const lookbackWindow = Math.min(
-    config.chunking.lookbackWindow || 100,
-    chunkSize / 10
+    Math.max(config.chunking.lookbackWindow || 100, chunkSize * 0.05),
+    500 // Cap at 500 characters to avoid excessive lookback
   );
 
-  // First try to find paragraph break
+  const lookbackStart = Math.max(start, end - lookbackWindow);
+
+  // Try to find the best semantic break in this order of preference:
+  // 1. Double newline (paragraph break)
   const paragraphBreak = content.lastIndexOf("\n\n", end);
-  if (paragraphBreak > end - lookbackWindow && paragraphBreak > start) {
-    return paragraphBreak;
+  if (paragraphBreak > lookbackStart) {
+    return paragraphBreak + 2; // Move past the paragraph break
   }
 
-  // Otherwise look for space
+  // 2. Single newline (line break)
+  const lineBreak = content.lastIndexOf("\n", end);
+  if (lineBreak > lookbackStart) {
+    return lineBreak + 1; // Move past the newline
+  }
+
+  // 3. Period followed by space (sentence end)
+  const sentenceBreak = content.lastIndexOf(". ", end);
+  if (sentenceBreak > lookbackStart) {
+    return sentenceBreak + 2; // Move past the period and space
+  }
+
+  // 4. Comma followed by space
+  const commaBreak = content.lastIndexOf(", ", end);
+  if (commaBreak > lookbackStart) {
+    return commaBreak + 2; // Move past the comma and space
+  }
+
+  // 5. Space (word break)
   const spaceBreak = content.lastIndexOf(" ", end);
-  if (spaceBreak > end - lookbackWindow && spaceBreak > start) {
-    return spaceBreak;
+  if (spaceBreak > lookbackStart) {
+    return spaceBreak + 1; // Move past the space
   }
 
+  // If no good break found, just use the end position
   return end;
 }
 

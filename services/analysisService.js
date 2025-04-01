@@ -6,6 +6,7 @@ const {
   mergeResults,
   enhancedRefineFinalResults,
   inferRelationships,
+  normalizeCharacterNames,
 } = require("../utils/results-processor");
 const {
   getAnalysisByBookId,
@@ -126,20 +127,20 @@ async function analyzeBook(content, title, author, options) {
     );
 
     // Perform a dedicated relationship inference pass to catch any missing relationships
-    // console.log("Performing relationship inference pass");
-    // const resultWithInferredRelationships = await inferRelationships(
-    //   client,
-    //   modelName,
-    //   refinedResults,
-    //   title,
-    //   author
-    // );
+    console.log("Performing relationship inference pass");
+    const resultWithInferredRelationships = await inferRelationships(
+      client,
+      modelName,
+      refinedResults,
+      title,
+      author
+    );
 
     // Add metadata
     return createFinalResult(
       title,
       author,
-      refinedResults,
+      resultWithInferredRelationships,
       chunks.length,
       consistencyKey
     );
@@ -212,9 +213,12 @@ function createFinalResult(
   chunksProcessed,
   consistencyKey
 ) {
+  // Normalize character names to ensure consistency
+  const normalizedResults = normalizeCharacterNames(results);
+
   // Count bidirectional relationship pairs
   const relationshipPairs = new Set();
-  results.relationships.forEach((rel) => {
+  normalizedResults.relationships.forEach((rel) => {
     const pair = [rel.source.toLowerCase(), rel.target.toLowerCase()]
       .sort()
       .join("|");
@@ -224,13 +228,13 @@ function createFinalResult(
   return {
     title,
     author,
-    characters: results.characters,
-    relationships: results.relationships,
+    characters: normalizedResults.characters,
+    relationships: normalizedResults.relationships,
     meta: {
       consistencyKey,
       chunksProcessed,
-      characterCount: results.characters.length,
-      relationshipCount: results.relationships.length,
+      characterCount: normalizedResults.characters.length,
+      relationshipCount: normalizedResults.relationships.length,
       relationshipPairsCount: relationshipPairs.size,
       bidirectionalAnalysis: true,
       analysisDate: new Date().toISOString(),

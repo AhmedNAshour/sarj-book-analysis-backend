@@ -247,36 +247,96 @@ function processRelationshipArcs(relationship) {
 }
 
 /**
- * Refines final results using the LLM
+ * Normalizes character names in the relationships to ensure consistency
+ * and updates aliases for characters that are referenced by alternate names
+ * @param {Object} results - The results object containing characters and relationships
+ * @returns {Object} The results with normalized character names
  */
-async function enhancedRefineFinalResults(
-  client,
-  modelName,
-  rawResults,
-  title,
-  author
-) {
-  // Convert raw results to JSON string for the prompt
-  const resultsJson = JSON.stringify(rawResults, null, 2);
-
-  const systemPrompt = prompts.createFinalRefinementPrompt(title, author);
-  const userPrompt = `Here are the raw results from analyzing "${title}" by ${author}". Please refine them according to the guidelines:\n\n${resultsJson}`;
-
-  try {
-    const content = await generateCompletion(
-      client,
-      modelName,
-      systemPrompt,
-      userPrompt,
-      { maxTokens: 20000 }
-    );
-
-    const jsonContent = extractJSON(content);
-    return parseOrReturnOriginal(jsonContent, rawResults, "refinement");
-  } catch (error) {
-    console.warn("Error in final refinement:", error.message);
-    return rawResults; // Return original results on error
+function normalizeCharacterNames(results) {
+  if (!results.characters || !results.relationships) {
+    return results;
   }
+
+  // Create a map of characters by their canonical name
+  const characterMap = new Map();
+  results.characters.forEach((character) => {
+    characterMap.set(character.name.toLowerCase(), character);
+  });
+
+  // Create a map of all possible name variations (including aliases) to canonical names
+  const nameVariationMap = new Map();
+  results.characters.forEach((character) => {
+    // Map canonical name
+    nameVariationMap.set(character.name.toLowerCase(), character.name);
+
+    // Map aliases
+    if (character.aliases && Array.isArray(character.aliases)) {
+      character.aliases.forEach((alias) => {
+        nameVariationMap.set(alias.toLowerCase(), character.name);
+      });
+    }
+  });
+
+  // Normalize relationship names and collect new aliases
+  const aliasUpdates = new Map();
+
+  results.relationships.forEach((relationship) => {
+    // Check source name
+    const sourceLower = relationship.source.toLowerCase();
+    const canonicalSource = nameVariationMap.get(sourceLower);
+
+    if (canonicalSource && canonicalSource !== relationship.source) {
+      // Add this variant as an alias if it's not already in aliases
+      const sourceChar = characterMap.get(canonicalSource.toLowerCase());
+
+      // Add to alias updates to process after loop
+      if (!aliasUpdates.has(canonicalSource.toLowerCase())) {
+        aliasUpdates.set(canonicalSource.toLowerCase(), new Set());
+      }
+      aliasUpdates.get(canonicalSource.toLowerCase()).add(relationship.source);
+
+      // Update relationship source to canonical name
+      relationship.source = canonicalSource;
+    }
+
+    // Check target name
+    const targetLower = relationship.target.toLowerCase();
+    const canonicalTarget = nameVariationMap.get(targetLower);
+
+    if (canonicalTarget && canonicalTarget !== relationship.target) {
+      // Add this variant as an alias
+      const targetChar = characterMap.get(canonicalTarget.toLowerCase());
+
+      // Add to alias updates to process after loop
+      if (!aliasUpdates.has(canonicalTarget.toLowerCase())) {
+        aliasUpdates.set(canonicalTarget.toLowerCase(), new Set());
+      }
+      aliasUpdates.get(canonicalTarget.toLowerCase()).add(relationship.target);
+
+      // Update relationship target to canonical name
+      relationship.target = canonicalTarget;
+    }
+  });
+
+  // Apply alias updates
+  aliasUpdates.forEach((aliasSet, characterNameLower) => {
+    const character = characterMap.get(characterNameLower);
+    if (character) {
+      // Initialize aliases array if it doesn't exist
+      if (!character.aliases) {
+        character.aliases = [];
+      }
+
+      // Add new aliases that don't already exist
+      aliasSet.forEach((alias) => {
+        if (!character.aliases.includes(alias) && alias !== character.name) {
+          character.aliases.push(alias);
+        }
+      });
+    }
+  });
+
+  return results;
 }
 
 /**
@@ -343,18 +403,21 @@ async function inferRelationships(client, modelName, results, title, author) {
         ];
       }
 
-      return results;
+      // Apply name normalization to ensure consistency
+      return normalizeCharacterNames(results);
     } catch (parseError) {
       console.warn(
         "JSON parse error in relationship inference:",
         parseError.message
       );
       console.warn("Attempted to parse:", jsonContent);
-      return results; // Return original results if parsing fails
+      // Return original results with name normalization applied
+      return normalizeCharacterNames(results);
     }
   } catch (error) {
     console.warn("Error in relationship inference:", error.message);
-    return results; // Return original results on error
+    // Return original results with name normalization applied
+    return normalizeCharacterNames(results);
   }
 }
 
@@ -371,8 +434,49 @@ function parseOrReturnOriginal(jsonContent, originalData, context) {
   }
 }
 
+/**
+ * Refines final results using the LLM
+ */
+async function enhancedRefineFinalResults(
+  client,
+  modelName,
+  rawResults,
+  title,
+  author
+) {
+  // Convert raw results to JSON string for the prompt
+  const resultsJson = JSON.stringify(rawResults, null, 2);
+
+  const systemPrompt = prompts.createFinalRefinementPrompt(title, author);
+  const userPrompt = `Here are the raw results from analyzing "${title}" by ${author}". Please refine them according to the guidelines:\n\n${resultsJson}`;
+
+  try {
+    const content = await generateCompletion(
+      client,
+      modelName,
+      systemPrompt,
+      userPrompt,
+      { maxTokens: 20000 }
+    );
+
+    const jsonContent = extractJSON(content);
+    const parsedResults = parseOrReturnOriginal(
+      jsonContent,
+      rawResults,
+      "refinement"
+    );
+
+    // Normalize character names to ensure consistency
+    return normalizeCharacterNames(parsedResults);
+  } catch (error) {
+    console.warn("Error in final refinement:", error.message);
+    return normalizeCharacterNames(rawResults); // Normalize even if refinement failed
+  }
+}
+
 module.exports = {
   mergeResults,
   enhancedRefineFinalResults,
   inferRelationships,
+  normalizeCharacterNames,
 };
