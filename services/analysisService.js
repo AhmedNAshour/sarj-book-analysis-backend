@@ -100,17 +100,17 @@ async function analyzeBook(content, title, author, options) {
 
     // Final merging with improved algorithm
     console.log("Using cumulative results from all chunks");
-    console.log("Final result: ", result);
+    console.log("Pre-refined final result: ", result);
 
     // Enhanced final refinement with LLM
-    // console.log("Performing enhanced final refinement with LLM");
-    // const refinedResults = await enhancedRefineFinalResults(
-    //   client,
-    //   modelName,
-    //   result,
-    //   title,
-    //   author
-    // );
+    console.log("Performing enhanced final refinement with LLM");
+    const refinedResults = await enhancedRefineFinalResults(
+      client,
+      modelName,
+      result,
+      title,
+      author
+    );
 
     // Perform a dedicated relationship inference pass to catch any missing relationships
     // console.log("Performing relationship inference pass");
@@ -126,7 +126,7 @@ async function analyzeBook(content, title, author, options) {
     return createFinalResult(
       title,
       author,
-      result,
+      refinedResults,
       chunks.length,
       consistencyKey
     );
@@ -173,12 +173,12 @@ async function processAllChunks(
 
     chunkResults.push(result);
 
-    console.log("Chunk number", i + 1, "results", result);
+    // console.log("Chunk number", i + 1, "results", result);
 
     // Incrementally merge to build cumulative knowledge
     cumulativeResults = mergeResults(chunkResults.slice(0, i + 1));
 
-    console.log("Cumulative results", cumulativeResults);
+    // console.log("Cumulative results", cumulativeResults);
 
     // Add delay between chunks
     if (i < chunks.length - 1) {

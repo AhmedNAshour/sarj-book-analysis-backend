@@ -70,7 +70,7 @@ async function generateCompletion(
         { role: "user", content: userContent },
       ],
       temperature: options.temperature || 0,
-      max_tokens: options.maxTokens || 4000,
+      max_tokens: options.maxTokens || 20000,
     });
 
     if (response.choices && response.choices[0]) {

@@ -92,6 +92,36 @@ function updateExistingCharacter(existingChar, character, chunkIndex) {
     existingChar.importance = character.importance;
   }
 
+  // Merge roles with deduplication
+  if (character.roles && Array.isArray(character.roles)) {
+    if (!existingChar.roles || !Array.isArray(existingChar.roles)) {
+      existingChar.roles = [];
+    }
+
+    character.roles.forEach((role) => {
+      // Only add roles that don't already exist (case-insensitive check)
+      if (
+        !existingChar.roles.some(
+          (existingRole) => existingRole.toLowerCase() === role.toLowerCase()
+        )
+      ) {
+        existingChar.roles.push(role);
+      }
+    });
+  }
+
+  // Append new actions (maintaining chronological order)
+  if (character.actions && Array.isArray(character.actions)) {
+    if (!existingChar.actions || !Array.isArray(existingChar.actions)) {
+      existingChar.actions = [];
+    }
+    character.actions.forEach((action) => {
+      if (!existingChar.actions.includes(action)) {
+        existingChar.actions.push(action);
+      }
+    });
+  }
+
   // Collect new aliases
   if (character.aliases && Array.isArray(character.aliases)) {
     if (!existingChar.aliases) {
@@ -130,10 +160,8 @@ function mergeRelationship(
   const source = relationship.source.toLowerCase();
   const target = relationship.target.toLowerCase();
   const directionKey = `${source}|${target}`;
-  const typeKey = relationship.type
-    ? relationship.type.toLowerCase()
-    : "unknown";
-  const key = `${directionKey}|${typeKey}`;
+  const typeKey = relationship.type;
+  const key = `${directionKey}`;
 
   // Check if we already have this directional relationship
   if (!relationshipMap.has(key)) {
@@ -168,6 +196,11 @@ function updateExistingRelationship(existingRel, relationship, chunkIndex) {
       // Add new status information
       existingRel.status = `${existingRel.status}, ${relationship.status}`;
     }
+  }
+
+  //Check if current type is different from existing type, if so, add both to existingRel.types, type is a string
+  if (relationship.type && !existingRel.type.includes(relationship.type)) {
+    existingRel.type = `${existingRel.type}, ${relationship.type}`;
   }
 
   // Handle description field
@@ -235,7 +268,7 @@ async function enhancedRefineFinalResults(
       modelName,
       systemPrompt,
       userPrompt,
-      { maxTokens: 8000 }
+      { maxTokens: 20000 }
     );
 
     const jsonContent = extractJSON(content);

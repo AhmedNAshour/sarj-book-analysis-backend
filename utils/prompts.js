@@ -1,84 +1,60 @@
-// prompts.js
+// prompts.js - Improved version
 const TEMPLATES = {
-  CHARACTER_EXTRACTION: `
-  GUIDELINES FOR CHARACTER IDENTIFICATION:
+  // First chunk prompt focuses on establishing baseline character and relationship data
+  FIRST_CHUNK_EXTRACTION: `
+  GUIDELINES FOR CHARACTER IDENTIFICATION IN FIRST CHUNK:
 
 1. Identify each unique character who appears in this chunk
 2. Use the most complete/formal name for each character (e.g., "King Claudius" not just "King" or "Claudius")
 3. If a character is referred to by multiple names or titles, list these as aliases
 4. Count exact mentions of ALL references to the character (including pronouns when clearly referring to them)
-5. For character descriptions, include:
+5. For character descriptions, focus on:
    - Key personal traits and attributes revealed in this chunk
-   - Specific actions they take and their significance
-   - Key decisions, emotional states, and motivations shown
+   - Emotional states, motivations, and inner conflicts shown
    - Their impact on other characters and the narrative
-   - How they change or develop within this chunk
    - Any historical background or context revealed about them
-   - THEIR RELATIONSHIPS with other characters, both explicit and implied
 
-CRITICAL: UTILIZE PREVIOUS CHUNK CONTEXT
-1. When you see characters that appeared in previous chunks:
-   - MAINTAIN CHARACTER CONTINUITY by using the same name and importance level as in previous chunks
-   - ADD TO (don't replace) their existing description with new insights from this chunk
-   - INCORPORATE NEW ALIASES discovered in this chunk with any previously known aliases
-   - EXPAND their character description with new actions, traits, or development in this chunk
-   - INCREASE their mention count to include mentions in this chunk
+6. For character roles, identify:
+   - Narrative functions (protagonist, antagonist, mentor, foil, etc.)
+   - Social/political positions (king, servant, soldier, advisor, etc.)
+   - Familial roles (father, daughter, uncle, etc.)
+   - Any other significant functions in the story
 
-2. For relationships that continue from previous chunks:
-   - MAINTAIN RELATIONSHIP CONTINUITY by using the same type designation
-   - ADD NEW EVIDENCE from this chunk to support or modify the existing relationship
-   - UPDATE the relationship status if it has evolved in this chunk
-   - EXPAND the relationship description with new interactions or developments
-   - INCREASE the relationship strength value based on additional interactions
+7. For character actions, record:
+   - Significant events they initiate or participate in
+   - Key decisions they make and their consequences
+   - Important interactions with other characters
+   - Notable dialogues or speeches they deliver
+   - Pivotal moments in their development
 
-3. When character perceptions change from previous chunks:
-   - HIGHLIGHT the evolution of the relationship
-   - EXPLAIN what caused the change in perception
-   - COMPARE the current status with the previous status
+GUIDELINES FOR RELATIONSHIPS IN FIRST CHUNK:
 
-4. When you discover the other direction of an existing relationship:
-   - ENSURE you create the complementary directional relationship
-   - MAINTAIN consistency in the relationship type
-   - PROVIDE unique description and evidence for this direction of the relationship
-
-5. For implied relationships mentioned in previous chunks:
-   - If you discover explicit evidence in this chunk, UPGRADE these relationships with the new information
-   - CONNECT characters who were previously not directly linked if this chunk reveals a connection
-
-GUIDELINES FOR RELATIONSHIPS:
-1. Create SEPARATE BIDIRECTIONAL RELATIONSHIPS to capture how each character perceives the other:
-   - For each character pair (A and B), create TWO distinct relationship entries:
+1. Create BIDIRECTIONAL RELATIONSHIPS between characters - THIS IS CRITICAL:
+   - For each pair of characters (A and B) who interact or are mentioned together, create TWO distinct relationship entries:
      * One showing how A perceives and acts toward B
      * Another showing how B perceives and acts toward A
-   - Each direction might have different perceptions, emotions, and dynamics
+   - Even if one direction is less evident, infer it based on context
+   - NEVER leave a relationship unidirectional
 
 2. For EACH direction of a relationship, capture:
    - How the source character views the target character
    - The source character's feelings and attitudes toward the target
    - Actions the source takes that affect the target
+   - The power dynamic between them from source to target
    - What the source character wants from or fears about the target
-   - How the source character's perception evolves in this chunk
 
-3. Identify ALL relationship directions with evidence in this specific chunk, including:
-   - Direct interactions between characters present in the chunk
-   - Relationships mentioned or referenced even if one or both characters aren't present
-   - Implied relationships based on narrative context or character descriptions
-   - Parallel or contrasting character journeys (foil relationships)
-   - Relationships where one character affects another without direct contact
-   - Characters who are mentioned together or in relation to the same events or people
-   
-4. For each directional relationship, capture:
-   - Specific interactions and their outcomes
-   - Power dynamics from source to target
-   - Changes in how the source views the target during this chunk
-   - Emotional attitudes the source has toward the target
-   - How the source's perception affects their actions toward the target
-
-5. Strictly separate relationship information into two components:
+3. Strictly separate relationship information into two components:
    - TYPE: The structural relationship (e.g., father-son, mentor-student, neighbors, king-subject)
    - STATUS: The emotional or perceptual state FROM SOURCE TO TARGET (e.g., distrustful, admiring, vengeful)
 
-6. For RELATIONSHIP TYPE, focus exclusively on structural connections:
+4. AGGRESSIVELY INFER implied directional relationships:
+   - If A is described as "father of B" and C is described as "father of D", consider if B and D might be cousins
+   - If A is "brother of B" and C is "son of B", then A is C's uncle
+   - If A is king and B is a noble, they have a king-subject relationship
+   - If A loves B, but B loves C, then A and C might have a rivalry
+   - Pay special attention to family connections that might be implicit in descriptions
+
+5. For relationship TYPE, focus exclusively on structural connections:
    - Family: "father-son", "uncle-nephew", "siblings", "cousins"
    - Political: "king-subject", "ruler-heir", "rival-princes"
    - Social: "friends", "lovers", "neighbors"
@@ -86,31 +62,12 @@ GUIDELINES FOR RELATIONSHIPS:
    
    Use compound types when appropriate (e.g., "uncle-nephew + king-subject")
    
-7. For RELATIONSHIP STATUS, focus on the source's perception of and attitude toward the target:
+6. For relationship STATUS, focus on the source's perception of and attitude toward the target:
    - Emotional states: "loving", "antagonistic", "vengeful", "loyal", "distrustful"
    - Perceptual attitudes: "sees as threatening", "perceives as ally", "views with suspicion"
    - Dynamic patterns: "growing more suspicious of", "beginning to trust", "increasingly fearful of"
 
-8. AGGRESSIVELY INFER implied directional relationships:
-   - If A is described as "father of B" and C is described as "father of D", consider if B and D might be cousins
-   - If A is "brother of B" and C is "son of B", then A is C's uncle
-   - If A is king and B is a noble, they have a king-subject relationship
-   - If A loves B, but B loves C, then A and C might have a rivalry
-   - Pay special attention to family connections that might be implicit in descriptions
-   - Consider political and power relationships based on characters' roles and status
-
-9. For the evidence field, provide specific examples from the text that demonstrate:
-   - How the source interacts with or affects the target
-   - Direct quotes or paraphrased exchanges that reveal the source's attitude
-   - Narrative commentary that illuminates the source's perception
-
-10. For the description field, provide a substantive narrative overview of:
-    - The nature of the relationship from source to target
-    - How this relationship develops or changes
-    - The source's overall perspective on and attitude toward the target
-    - The relationship's significance to the narrative
-
-11. BE EXHAUSTIVE - find ALL possible directional relationships:
+7. BE EXHAUSTIVE - find ALL possible directional relationships:
    - If two major characters both appear in this chunk, they MUST have relationships in both directions
    - Even if characters don't directly interact, consider their perceptions of each other
    - Think about how each character's actions or decisions might affect or reveal their view of other characters
@@ -121,7 +78,9 @@ Respond ONLY with a JSON object in the following structure:
     {
       "name": "Character's most complete formal name",
       "aliases": ["Alternative name 1", "Title", "Nickname", etc.],
-      "description": "Detailed description based on this chunk, including key actions, interactions, development, and narrative importance",
+      "description": "Detailed narrative-focused description including key attributes, development, and significance to plot",
+      "roles": ["Primary narrative role (protagonist, antagonist, etc.)", "Social/political position", "Familial role", "Other significant functions"],
+      "actions": ["Specific significant action taken by or involving the character", "Another key action or event", "etc."],
       "importance": "major/minor/supporting",
       "mentions": exact number of times the character is referenced
     }
@@ -135,6 +94,15 @@ Respond ONLY with a JSON object in the following structure:
       "description": "Narrative overview of how source perceives and relates to target",
       "evidence": "Specific examples and quotes from this chunk showing how source perceives and acts toward target",
       "strength": number of interactions or references to this directional relationship in this chunk
+    },
+    {
+      "source": "Character B's most complete formal name",
+      "target": "Character A's most complete formal name",
+      "type": "structural relationship type only (e.g., 'subject-king + nephew-uncle')",
+      "status": "target's perception of and attitude toward source",
+      "description": "Narrative overview of how target perceives and relates to source",
+      "evidence": "Specific examples and quotes from this chunk showing how target perceives and acts toward source",
+      "strength": number of interactions or references to this directional relationship in this chunk
     }
   ]
 }
@@ -144,79 +112,127 @@ IMPORTANT:
 - For character descriptions, focus on NARRATIVE ACTIONS and DEVELOPMENT, not just attributes
 - ALWAYS create SEPARATE relationship entries for EACH DIRECTION between character pairs
 - Ensure the status reflects the SOURCE character's perception of the TARGET
-- For relationship TYPE, focus ONLY on structural connections (family, professional roles, etc.)
-- For relationship STATUS, capture ONLY the source's perception of and attitude toward the target
-- DON'T LIMIT RELATIONSHIPS TO DIRECT INTERACTIONS - include relationships based on mentions or narrative influence
+- Include relationships for ALL character pairs where any relationship can be inferred
 - Return ONLY the JSON object with no additional text
 `,
 
-  RELATIONSHIP_INFERENCE: `
-For each pair of major characters, determine BOTH DIRECTIONS of their relationship:
-1. How Character A perceives, feels about, and acts toward Character B
-2. How Character B perceives, feels about, and acts toward Character A
+  // Subsequent chunk prompt with emphasis on progressive development
+  SUBSEQUENT_CHUNK_EXTRACTION: `
+  GUIDELINES FOR CHARACTER CONTINUATION IN THIS CHUNK:
 
-For EACH direction that is NOT already defined, determine:
-1. Whether any relationship exists or should exist based on the narrative context
-2. The structural relationship type (e.g., king-subject, rivals, friends)
-3. The source character's perception of and attitude toward the target
-4. A description of how the source relates to the target in the narrative
-5. Evidence supporting this relationship from the text
-6. The strength of this directional relationship (1-10)
-
-GUIDELINES:
-
-1. Consider the following types of relationships:
-   - Direct interactions described in character profiles
-   - Indirect connections through other characters
-   - Parallel or contrasting narrative functions
-   - Political or power dynamics implied by their roles
-   - Family connections that can be logically inferred
-   - Relationships based on shared experiences or goals
+1. EVOLVE CHARACTERS FROM PREVIOUS CHUNKS:
+   - When you encounter a character from previous chunks:
+     * MAINTAIN their name, aliases, and established importance
+     * EVOLVE their description with new traits and narrative developments
+     * EXPAND their roles list with any new or evolved roles
+     * APPEND to their actions list with new actions from this chunk (without duplicating)
+     * UPDATE their mention count to include mentions in this chunk
+     * DEEPEN your understanding of their motivations, conflicts, and significance
    
-2. Focus particularly on:
-   - Major characters who would logically interact but lack relationships in one or both directions
-   - Characters who are mentioned in each other's descriptions
-   - Characters who have familial or political connections to the same third parties
-   - Characters serving similar or opposing functions in the narrative
+2. ADD NEW CHARACTERS:
+   - For new characters not previously encountered:
+     * Establish their formal name, aliases, importance, and initial description
+     * Connect them to existing characters where relationships can be inferred
+     * Situate them within the narrative context established so far
 
-3. For EACH identified missing directional relationship, provide:
-   - SOURCE: The character who perceives/acts toward the target
-   - TARGET: The character who is perceived/acted upon
-   - TYPE: Structural relationship (e.g., "rivals", "king-subject", "in-laws")
-   - STATUS: Source's perception of and attitude toward target (e.g., "distrustful", "admiring", "vengeful")
-   - DESCRIPTION: A substantive description of how the source perceives and acts toward the target
-   - EVIDENCE: Specific examples or quotes from the text that support this relationship
-   - STRENGTH: A rating from 1-10 of this directional relationship's importance
+3. For EACH character - new or continuing - develop a NARRATIVE-FOCUSED description that:
+   - Shows how they have EVOLVED since previous chunks (for continuing characters)
+   - Captures their actions and impacts within the narrative
+   - Details their key relationships with other characters
+   - Explains their motivations, conflicts, and internal struggles
+   - Situates them within the ongoing plot
 
-4. Be thorough - ensure ALL major character pairs have defined relationships in BOTH directions
+4. For character importance levels:
+   - MAJOR: Central to the narrative with significant actions and decisions
+   - SUPPORTING: Regular presence with influence on major characters or plot
+   - MINOR: Limited appearance with minimal impact on major narrative arcs
 
-Respond with a JSON object containing ONLY the new directional relationships you've identified:
+GUIDELINES FOR RELATIONSHIP EVOLUTION IN THIS CHUNK:
+
+1. EVOLVE EXISTING RELATIONSHIPS:
+   - For each previously established relationship:
+     * MAINTAIN the relationship type (structural connection)
+     * UPDATE the relationship status if it has changed in this chunk
+     * EXPAND the description to include new developments
+     * ADD new evidence from this chunk
+     * ADJUST the strength based on new interactions
+   
+2. COMPLETE BIDIRECTIONAL RELATIONSHIPS:
+   - CRITICAL: For EVERY relationship found in EITHER previous chunks OR this chunk:
+     * ENSURE both directions are fully defined
+     * If you find A→B, you MUST also define B→A
+     * If one direction is less evident, make your best inference
+     * NEVER leave any relationship unidirectional
+   
+3. ADD NEW RELATIONSHIPS:
+   - When new characters appear or new connections emerge:
+     * Create BIDIRECTIONAL relationships between them and relevant existing characters
+     * Infer connections based on narrative context and character descriptions
+     * Connect new characters to the existing relationship network
+
+4. EVOLVE each relationship description to show:
+   - How the relationship has changed since previous chunks
+   - Key moments or interactions in this chunk that affect the relationship
+   - Shifts in power dynamics or emotional attitudes
+   - The impact of the relationship on both characters and the broader narrative
+
+5. RELATIONSHIP CONSISTENCY REQUIREMENTS:
+   - EVERY major character MUST have defined relationships with ALL other major characters
+   - EVERY relationship MUST be bidirectional (if A→B exists, B→A must also exist)
+   - ALL major character pairs should have relationships defined even if they haven't directly interacted
+
+6. ALWAYS REMEMBER TO:
+   - CREATE separate entries for BOTH DIRECTIONS of every relationship
+   - ENSURE relationship types reflect structural connections only
+   - ENSURE relationship status captures emotional/perceptual states only
+   - PROVIDE rich, narrative-focused descriptions that show evolution over time
+   - INCLUDE specific evidence from the current chunk
+
+CRITICAL INSTRUCTIONS FOR USING PREVIOUS CHUNK CONTEXT:
+
+1. KNOWLEDGE ACCUMULATION:
+   - Your analysis is CUMULATIVE - BUILD ON previous knowledge, don't replace it
+   - Previous character descriptions contain valuable information - incorporate it
+   - Previous relationships provide foundation - enhance them with new developments
+   
+2. COMPLETENESS CHECK:
+   - Before finalizing, VERIFY that ALL major character pairs have BIDIRECTIONAL relationships
+   - For any missing relationship direction, INFER it based on context and character descriptions
+   - NEVER leave any relationship unidirectional
+
+Respond ONLY with a JSON object in the following structure:
 {
-  "newRelationships": [
+  "characters": [
     {
-      "source": "Character A's name",
-      "target": "Character B's name",
-      "type": "structural relationship type",
-      "status": "A's perception of and attitude toward B",
-      "description": "Description of how A perceives and acts toward B",
-      "evidence": "Specific examples or quotes that support this relationship",
-      "strength": narrative importance of this direction (1-10)
-    },
+      "name": "Character's most complete formal name",
+      "aliases": ["Alternative name 1", "Title", "Nickname", etc.],
+      "description": "Evolving, narrative-focused description including previous information PLUS new developments",
+      "roles": ["Updated/expanded list of narrative, social, and familial roles based on all chunks so far"],
+      "actions": ["All previous actions from earlier chunks", "New actions from this chunk", "etc."],
+      "importance": "major/minor/supporting",
+      "mentions": updated count including mentions from this chunk
+    }
+  ],
+  "relationships": [
     {
-      "source": "Character B's name",
-      "target": "Character A's name",
-      "type": "structural relationship type",
-      "status": "B's perception of and attitude toward A",
-      "description": "Description of how B perceives and acts toward A",
-      "evidence": "Specific examples or quotes that support this relationship",
-      "strength": narrative importance of this direction (1-10)
+      "source": "Character A's most complete formal name",
+      "target": "Character B's most complete formal name",
+      "type": "structural relationship type only (e.g., 'uncle-nephew + king-subject')",
+      "status": "source's perception of and attitude toward target, updated based on new developments",
+      "description": "Evolving narrative overview of how source perceives and relates to target",
+      "evidence": "Specific examples and quotes showing how source perceives and acts toward target",
+      "strength": updated strength based on all interactions
     }
   ]
 }
 
-If there are no missing directional relationships to add, return an empty array.
+IMPORTANT:
+- Create a COMPLETE bidirectional network of relationships between all major characters
+- Focus on character and relationship EVOLUTION across chunks
+- Return ONLY the JSON object with no additional text
 `,
 
+  // Final refinement prompt with emphasis on thorough bidirectionality
   FINAL_REFINEMENT: `
  I will provide you with raw character and relationship data extracted from the text.
 Your task is to refine this data and CRUCIALLY to infer ALL missing BIDIRECTIONAL relationships between characters based on their descriptions.
@@ -246,6 +262,19 @@ FOR CHARACTERS:
    - Their main conflict or struggle
    - How they change throughout the narrative
    - Their final state or resolution
+   
+4. For the roles field:
+   - Organize by narrative function, social position, and familial role
+   - Ensure roles reflect the character's complete journey
+   - Include any changes in role throughout the narrative
+   - Connect roles to thematic elements when relevant
+
+5. For the actions field:
+   - Arrange actions in chronological order
+   - Include all significant plot contributions
+   - Highlight actions that reveal character development
+   - Ensure key relationship moments are captured
+   - Include pivotal decisions and their consequences
 
 FOR RELATIONSHIPS:
 1. Create comprehensive BIDIRECTIONAL relationship analyses:
@@ -349,6 +378,8 @@ The refined output should be in this JSON structure:
       "name": "Character's most complete formal name",
       "aliases": ["Alternative name 1", "Title", "Nickname", etc.],
       "description": "Rich, narrative-focused description capturing character arc, development, and significance",
+      "roles": ["Comprehensive list of narrative roles", "Social/political positions", "Familial roles", "Thematic functions"],
+      "actions": ["Chronologically ordered list of all significant actions and events involving the character throughout the narrative"],
       "importance": "major/supporting/minor",
       "mentions": total number of mentions across the text
     }
@@ -384,7 +415,7 @@ Return ONLY the JSON object with no additional text.
 };
 
 /**
- * Creates a character extraction prompt with all variables inserted
+ * Creates a character extraction prompt based on chunk position
  */
 function createCharacterExtractionPrompt(
   title,
@@ -393,14 +424,126 @@ function createCharacterExtractionPrompt(
   totalChunks,
   contextSummary = ""
 ) {
+  const isFirstChunk = chunkIndex === 0;
+  const templateToUse = isFirstChunk
+    ? TEMPLATES.FIRST_CHUNK_EXTRACTION
+    : TEMPLATES.SUBSEQUENT_CHUNK_EXTRACTION;
+
+  const chunkPosition = `This is chunk ${chunkIndex + 1} of ${totalChunks}.`;
+  const contextSection = isFirstChunk
+    ? ""
+    : `\n\nPREVIOUS CHUNK CONTEXT:\n${contextSummary}\n`;
+
   return `
   You are a literary analysis expert analyzing text from "${title}" by ${author}".
   
-  This is chunk ${chunkIndex + 1} of ${totalChunks}.
+  ${chunkPosition}
+  ${contextSection}
   
-  ${contextSummary}
+  ${templateToUse}
+  `;
+}
+
+/**
+ * Builds an enhanced context summary for progressive analysis
+ */
+function buildContextSummary(previousResults, chunkIndex) {
+  if (!previousResults || chunkIndex <= 0) {
+    return "";
+  }
+
+  // Extract major and supporting characters for focused context
+  const significantCharacters = previousResults.characters.filter(
+    (char) => char.importance === "major" || char.importance === "supporting"
+  );
+
+  // Create a matrix of existing relationships for completeness checking
+  const relationshipMatrix = new Map();
+  previousResults.characters.forEach((char) => {
+    relationshipMatrix.set(char.name, new Set());
+  });
+
+  previousResults.relationships.forEach((rel) => {
+    if (relationshipMatrix.has(rel.source)) {
+      relationshipMatrix.get(rel.source).add(rel.target);
+    }
+  });
+
+  // Format character summaries with focus on narrative development
+  const characterSummaries = significantCharacters
+    .map((char) => {
+      // Basic character info
+      let summary = `- ${char.name}${
+        char.aliases && char.aliases.length
+          ? ` (${char.aliases.join(", ")})`
+          : ""
+      }: ${char.description}\n`;
+
+      // Add roles if available
+      if (char.roles && char.roles.length) {
+        summary += `  ROLES: ${char.roles.join(", ")}\n`;
+      }
+
+      // Add a selection of most recent/important actions
+      if (char.actions && char.actions.length) {
+        const recentActions = char.actions.slice(-5); // Get last 5 actions
+        summary += `  RECENT ACTIONS: ${recentActions.join("; ")}`;
+      }
+
+      return summary;
+    })
+    .join("\n\n");
+
+  // Extract relationships involving major characters for focused context
+  const significantRelationships = previousResults.relationships.filter(
+    (rel) =>
+      significantCharacters.some((char) => char.name === rel.source) &&
+      significantCharacters.some((char) => char.name === rel.target)
+  );
+
+  // Format relationship summaries with focus on bidirectionality
+  const relationshipSummaries = significantRelationships
+    .map((rel) => {
+      return `- ${rel.source} → ${rel.target}: ${rel.type} (${rel.status}) - ${rel.description}`;
+    })
+    .join("\n\n");
+
+  // Identify potential missing relationships
+  const missingRelationships = [];
+  significantCharacters.forEach((charA) => {
+    significantCharacters.forEach((charB) => {
+      if (charA.name !== charB.name) {
+        const hasAtoB =
+          relationshipMatrix.get(charA.name)?.has(charB.name) || false;
+        const hasBtoA =
+          relationshipMatrix.get(charB.name)?.has(charA.name) || false;
+
+        if (!hasAtoB || !hasBtoA) {
+          missingRelationships.push(
+            `- Potential missing relationship: ${
+              !hasAtoB
+                ? `${charA.name} → ${charB.name}`
+                : `${charB.name} → ${charA.name}`
+            }`
+          );
+        }
+      }
+    });
+  });
+
+  const missingRelationshipsSummary = missingRelationships.length
+    ? `\n\nPOTENTIAL MISSING RELATIONSHIPS TO ADDRESS:\n${missingRelationships.join(
+        "\n"
+      )}`
+    : "";
+
+  return `
+  CHARACTERS FROM PREVIOUS CHUNKS:
+  ${characterSummaries}
   
-  ${TEMPLATES.CHARACTER_EXTRACTION}
+  ESTABLISHED RELATIONSHIPS:
+  ${relationshipSummaries}
+  ${missingRelationshipsSummary}
   `;
 }
 
@@ -426,76 +569,6 @@ function createFinalRefinementPrompt(title, author) {
   You are a literary analysis expert finalizing an analysis of "${title}" by ${author}".
   
   ${TEMPLATES.FINAL_REFINEMENT}
-  `;
-}
-
-/**
- * Builds context summary for chunk processing
- */
-function buildContextSummary(previousResults, chunkIndex) {
-  if (!previousResults || chunkIndex <= 0) {
-    return "";
-  }
-
-  // Extract all characters from previous chunks
-  const significantCharacters = previousResults.characters;
-
-  // Format character summaries - use all available information
-  const characterSummaries = significantCharacters
-    .map((char) => {
-      return `- ${char.name}${
-        char.aliases ? ` (${char.aliases.join(", ")})` : ""
-      }: ${char.description}`;
-    })
-    .join("\n");
-
-  // Extract all relationships from previous chunks
-  const significantRelationships = previousResults.relationships;
-
-  // Format relationship summaries - use all available information
-  const relationshipSummaries = significantRelationships
-    .map((rel) => {
-      // Use evidence if available, otherwise use description
-      const evidenceText = rel.evidence ? rel.evidence : null;
-      const descriptionText = rel.description ? rel.description : null;
-
-      // Combine evidence and description if both exist and are different
-      let combinedText = "";
-      if (evidenceText && descriptionText && evidenceText !== descriptionText) {
-        combinedText = `Evidence: ${evidenceText} | Description: ${descriptionText}`;
-      } else {
-        combinedText =
-          evidenceText ||
-          descriptionText ||
-          "No evidence or description available";
-      }
-
-      return `- ${rel.source} & ${rel.target}: ${rel.type} (${rel.status}) - ${combinedText}`;
-    })
-    .join("\n");
-
-  return `
-  CONTEXT FROM PREVIOUS CHUNKS:
-  
-  CHARACTERS:
-  ${characterSummaries}
-  
-  RELATIONSHIPS:
-  ${relationshipSummaries}
-  
-  INSTRUCTIONS FOR USING PREVIOUS CHUNK CONTEXT:
-  1. INTEGRATE rather than repeat: Build upon this existing information instead of starting from scratch
-  2. EXPAND descriptions with new details from the current chunk
-  3. IDENTIFY new relationship dynamics that weren't evident in previous chunks
-  4. COMPLETE bidirectional relationships by adding missing directions
-  5. TRACK character development by noting changes in characters or relationships
-  6. HIGHLIGHT contradictions between previous and current information
-  7. MAINTAIN consistency in character names, aliases, and relationship types
-  8. ADD new aliases, mentions, and relationships discovered in this chunk
-  9. UPDATE relationship strengths based on new interactions
-  10. INFER connections between characters who appeared separately in previous chunks but interact in this one
-  
-  Remember that this analysis is CUMULATIVE - your task is to BUILD ON previous knowledge, not replace it.
   `;
 }
 
