@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const axios = require("axios");
-const { connectDB } = require("./utils/database");
+const { connectDB, closeDB } = require("./utils/database");
 const mongoose = require("mongoose");
 
 // Load environment variables
@@ -30,6 +30,19 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
+
+    // Set up graceful shutdown
+    process.on("SIGINT", async () => {
+      console.log("SIGINT received, shutting down gracefully");
+      await closeDB();
+      process.exit(0);
+    });
+
+    process.on("SIGTERM", async () => {
+      console.log("SIGTERM received, shutting down gracefully");
+      await closeDB();
+      process.exit(0);
+    });
   } catch (err) {
     console.error("Failed to connect to MongoDB:", err);
     // Exit with error in production, but allow retry in development
@@ -40,12 +53,22 @@ async function startServer() {
 }
 
 // Middleware
-app.use(express.json({ limit: "50mb" })); // Increase payload size limit
 app.use(cors());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // Routes
 app.use("/api/books", bookRoutes);
 app.use("/api/analysis", analysisRoutes);
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    dbConnection:
+      mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+  });
+});
 
 // Start the server
 startServer();

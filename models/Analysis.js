@@ -1,53 +1,171 @@
 const mongoose = require("mongoose");
 
+// Character schema
+const CharacterSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, "Character name is required"],
+    trim: true,
+  },
+  importance: {
+    type: String,
+    trim: true,
+  },
+  description: {
+    type: String,
+    trim: true,
+  },
+  aliases: [String],
+  mentions: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+});
+
+// Relationship schema
+const RelationshipSchema = new mongoose.Schema({
+  source: {
+    type: String,
+    required: [true, "Source character is required"],
+    trim: true,
+  },
+  target: {
+    type: String,
+    required: [true, "Target character is required"],
+    trim: true,
+  },
+  type: {
+    type: String,
+    trim: true,
+  },
+  strength: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 10,
+  },
+  status: {
+    type: String,
+    trim: true,
+  },
+  description: {
+    type: String,
+    trim: true,
+  },
+  evidence: {
+    type: String,
+    trim: true,
+  },
+});
+
+// MetaData schema
+const MetaDataSchema = new mongoose.Schema({
+  consistencyKey: String,
+  chunksProcessed: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+  characterCount: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+  relationshipCount: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+  relationshipPairsCount: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+  bidirectionalAnalysis: {
+    type: Boolean,
+    default: false,
+  },
+  analysisDate: {
+    type: Date,
+    default: Date.now,
+  },
+  provider: String,
+});
+
+// Main Analysis schema
 const AnalysisSchema = new mongoose.Schema(
   {
     bookId: {
       type: String,
-      required: true,
+      required: [true, "Book ID is required"],
       unique: true,
+      trim: true,
       index: true,
     },
     title: {
       type: String,
-      required: true,
+      required: [true, "Book title is required"],
+      trim: true,
+      index: true,
     },
     author: {
       type: String,
-      required: true,
+      required: [true, "Book author is required"],
+      trim: true,
+      index: true,
     },
-    characters: [
-      {
-        name: String,
-        importance: String,
-        description: String,
-        aliases: [String],
-        mentions: Number,
-      },
-    ],
-    relationships: [
-      {
-        source: String,
-        target: String,
-        type: String,
-        strength: Number,
-        status: String,
-        description: String,
-        evidence: String,
-      },
-    ],
+    characters: [CharacterSchema],
+    relationships: [RelationshipSchema],
     meta: {
-      consistencyKey: String,
-      chunksProcessed: Number,
-      characterCount: Number,
-      relationshipCount: Number,
-      relationshipPairsCount: Number,
-      bidirectionalAnalysis: Boolean,
-      analysisDate: Date,
-      provider: String,
+      type: MetaDataSchema,
+      default: () => ({}),
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+
+// Add compound indices for more efficient queries
+AnalysisSchema.index({ bookId: 1, createdAt: -1 });
+AnalysisSchema.index({ author: 1, title: 1 });
+
+// Add virtual for character count
+AnalysisSchema.virtual("characterCount").get(function () {
+  return this.characters?.length || 0;
+});
+
+// Add virtual for relationship count
+AnalysisSchema.virtual("relationshipCount").get(function () {
+  return this.relationships?.length || 0;
+});
+
+// Add data validation hook
+AnalysisSchema.pre("save", function (next) {
+  if (this.isModified("relationships")) {
+    // Ensure source and target characters exist in characters array
+    const characterNames = new Set(
+      this.characters.map((c) => c.name.toLowerCase())
+    );
+
+    const invalidRelationships = this.relationships.filter((rel) => {
+      const source = rel.source.toLowerCase();
+      const target = rel.target.toLowerCase();
+      return !characterNames.has(source) || !characterNames.has(target);
+    });
+
+    if (invalidRelationships.length > 0) {
+      console.warn(
+        `Warning: ${invalidRelationships.length} relationships reference characters not in character list`
+      );
+      // Not blocking save, just warning
+    }
+  }
+
+  next();
+});
 
 module.exports = mongoose.model("Analysis", AnalysisSchema);

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const analysisService = require("../services/analysisService");
 const bookService = require("../services/bookService");
+const { getAllAnalyses } = require("../services/cacheService");
 
 router.post("/:bookId/full", async (req, res) => {
   try {
@@ -109,6 +110,19 @@ router.delete("/:bookId", async (req, res) => {
     });
   } catch (error) {
     console.error("Error deleting cached analysis:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Route to get all analyses with pagination
+router.get("/", async (req, res) => {
+  try {
+    const { limit = 50, page = 1, sort = "-createdAt" } = req.query;
+    const result = await getAllAnalyses({ limit, page, sort });
+
+    res.json(result);
+  } catch (error) {
+    console.error("Error fetching all analyses:", error);
     res.status(500).json({ error: error.message });
   }
 });

@@ -26,37 +26,50 @@ const config = require("../config");
 async function getBookAnalysis(bookId, content, title, author, options) {
   const { overrideCache = false } = options;
 
-  // Check cache first if not overriding
-  if (!overrideCache) {
-    console.log(`Checking for cached analysis for book ID: ${bookId}`);
-    const cachedAnalysis = await getAnalysisByBookId(bookId);
+  try {
+    // Check cache first if not overriding
+    if (!overrideCache) {
+      console.log(`Checking for cached analysis for book ID: ${bookId}`);
+      try {
+        const cachedAnalysis = await getAnalysisByBookId(bookId);
+        if (cachedAnalysis) {
+          console.log(`Using cached analysis for book ID: ${bookId}`);
+          return cachedAnalysis;
+        }
+        console.log(`No cached analysis found for book ID: ${bookId}`);
+      } catch (error) {
+        console.warn(
+          `Cache check failed, will perform new analysis: ${error.message}`
+        );
+      }
+    } else if (overrideCache) {
+      console.log(`Cache override requested for book ID: ${bookId}`);
 
-    if (cachedAnalysis) {
-      console.log(`Using cached analysis for book ID: ${bookId}`);
-      return cachedAnalysis;
+      // Delete any existing analysis
+      try {
+        const deleted = await deleteAnalysis(bookId);
+        if (deleted) {
+          console.log(`Deleted existing analysis for book ID: ${bookId}`);
+        }
+      } catch (error) {
+        console.warn(`Failed to delete existing analysis: ${error.message}`);
+        // Continue with analysis despite deletion error
+      }
     }
 
-    console.log(`No cached analysis found for book ID: ${bookId}`);
-  } else if (overrideCache) {
-    console.log(`Cache override requested for book ID: ${bookId}`);
+    // Perform new analysis
+    const analysis = await analyzeBook(content, title, author, options);
 
-    // Delete any existing analysis
-    const deleted = await deleteAnalysis(bookId);
-    if (deleted) {
-      console.log(`Deleted existing analysis for book ID: ${bookId}`);
-    }
+    // Save to cache
+    console.log(`Saving analysis to database for book ID: ${bookId}`);
+    const savedAnalysis = await saveAnalysis(bookId, analysis, options);
+    console.log(`Analysis saved with ID: ${savedAnalysis?._id}`);
+
+    return savedAnalysis || analysis;
+  } catch (error) {
+    console.error(`Error in getBookAnalysis for ${bookId}:`, error);
+    throw new Error(`Failed to analyze book: ${error.message}`);
   }
-
-  // Perform new analysis
-  const analysis = await analyzeBook(content, title, author, options);
-
-  // Save to cache
-  console.log(`Saving analysis to database for book ID: ${bookId}`);
-  // console.log("analysis - characters", analysis.characters);
-  // console.log("analysis - relationships", analysis.relationships);
-  await saveAnalysis(bookId, analysis, options);
-
-  return analysis;
 }
 
 /**
