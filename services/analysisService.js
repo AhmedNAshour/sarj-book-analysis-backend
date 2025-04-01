@@ -3,11 +3,61 @@ const { createLLMClient, getModelName } = require("../utils/llm-client");
 const { chunkContent } = require("../utils/content-processor");
 const { processChunk } = require("../utils/character-analyzer");
 const {
-  improvedMerge,
+  mergeResults,
   enhancedRefineFinalResults,
   inferRelationships,
 } = require("../utils/results-processor");
+const {
+  getAnalysisByBookId,
+  saveAnalysis,
+  deleteAnalysis,
+} = require("./cacheService");
 const config = require("../config");
+
+/**
+ * Retrieves or generates a book analysis based on options
+ * @param {string} bookId - The book ID
+ * @param {string} content - The book content as text
+ * @param {string} title - The book title
+ * @param {string} author - The book author
+ * @param {Object} options - Configuration options
+ * @returns {Promise<Object>} The analysis results
+ */
+async function getBookAnalysis(bookId, content, title, author, options) {
+  const { overrideCache = false } = options;
+
+  // Check cache first if not overriding
+  if (!overrideCache) {
+    console.log(`Checking for cached analysis for book ID: ${bookId}`);
+    const cachedAnalysis = await getAnalysisByBookId(bookId);
+
+    if (cachedAnalysis) {
+      console.log(`Using cached analysis for book ID: ${bookId}`);
+      return cachedAnalysis;
+    }
+
+    console.log(`No cached analysis found for book ID: ${bookId}`);
+  } else if (overrideCache) {
+    console.log(`Cache override requested for book ID: ${bookId}`);
+
+    // Delete any existing analysis
+    const deleted = await deleteAnalysis(bookId);
+    if (deleted) {
+      console.log(`Deleted existing analysis for book ID: ${bookId}`);
+    }
+  }
+
+  // Perform new analysis
+  const analysis = await analyzeBook(content, title, author, options);
+
+  // Save to cache
+  console.log(`Saving analysis to database for book ID: ${bookId}`);
+  // console.log("analysis - characters", analysis.characters);
+  // console.log("analysis - relationships", analysis.relationships);
+  await saveAnalysis(bookId, analysis, options);
+
+  return analysis;
+}
 
 /**
  * Main function to analyze a book's characters and relationships
@@ -39,7 +89,7 @@ async function analyzeBook(content, title, author, options) {
     console.log(`Split content into ${chunks.length} chunks for analysis`);
 
     // Process chunks with progressive context enhancement
-    const chunkResults = await processAllChunks(
+    const result = await processAllChunks(
       client,
       modelName,
       chunks,
@@ -49,34 +99,34 @@ async function analyzeBook(content, title, author, options) {
     );
 
     // Final merging with improved algorithm
-    console.log("Performing improved merge of chunk results");
-    const mergedResults = improvedMerge(chunkResults);
+    console.log("Using cumulative results from all chunks");
+    console.log("Final result: ", result);
 
     // Enhanced final refinement with LLM
-    console.log("Performing enhanced final refinement with LLM");
-    const refinedResults = await enhancedRefineFinalResults(
-      client,
-      modelName,
-      mergedResults,
-      title,
-      author
-    );
+    // console.log("Performing enhanced final refinement with LLM");
+    // const refinedResults = await enhancedRefineFinalResults(
+    //   client,
+    //   modelName,
+    //   result,
+    //   title,
+    //   author
+    // );
 
     // Perform a dedicated relationship inference pass to catch any missing relationships
-    console.log("Performing relationship inference pass");
-    const resultWithInferredRelationships = await inferRelationships(
-      client,
-      modelName,
-      refinedResults,
-      title,
-      author
-    );
+    // console.log("Performing relationship inference pass");
+    // const resultWithInferredRelationships = await inferRelationships(
+    //   client,
+    //   modelName,
+    //   refinedResults,
+    //   title,
+    //   author
+    // );
 
     // Add metadata
     return createFinalResult(
       title,
       author,
-      resultWithInferredRelationships,
+      result,
       chunks.length,
       consistencyKey
     );
@@ -123,8 +173,12 @@ async function processAllChunks(
 
     chunkResults.push(result);
 
+    console.log("Chunk number", i + 1, "results", result);
+
     // Incrementally merge to build cumulative knowledge
-    cumulativeResults = improvedMerge(chunkResults.slice(0, i + 1));
+    cumulativeResults = mergeResults(chunkResults.slice(0, i + 1));
+
+    console.log("Cumulative results", cumulativeResults);
 
     // Add delay between chunks
     if (i < chunks.length - 1) {
@@ -132,7 +186,7 @@ async function processAllChunks(
     }
   }
 
-  return chunkResults;
+  return cumulativeResults;
 }
 
 /**
@@ -173,4 +227,5 @@ function createFinalResult(
 
 module.exports = {
   analyzeBook,
+  getBookAnalysis,
 };

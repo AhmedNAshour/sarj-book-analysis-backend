@@ -16,6 +16,35 @@ const TEMPLATES = {
    - Any historical background or context revealed about them
    - THEIR RELATIONSHIPS with other characters, both explicit and implied
 
+CRITICAL: UTILIZE PREVIOUS CHUNK CONTEXT
+1. When you see characters that appeared in previous chunks:
+   - MAINTAIN CHARACTER CONTINUITY by using the same name and importance level as in previous chunks
+   - ADD TO (don't replace) their existing description with new insights from this chunk
+   - INCORPORATE NEW ALIASES discovered in this chunk with any previously known aliases
+   - EXPAND their character description with new actions, traits, or development in this chunk
+   - INCREASE their mention count to include mentions in this chunk
+
+2. For relationships that continue from previous chunks:
+   - MAINTAIN RELATIONSHIP CONTINUITY by using the same type designation
+   - ADD NEW EVIDENCE from this chunk to support or modify the existing relationship
+   - UPDATE the relationship status if it has evolved in this chunk
+   - EXPAND the relationship description with new interactions or developments
+   - INCREASE the relationship strength value based on additional interactions
+
+3. When character perceptions change from previous chunks:
+   - HIGHLIGHT the evolution of the relationship
+   - EXPLAIN what caused the change in perception
+   - COMPARE the current status with the previous status
+
+4. When you discover the other direction of an existing relationship:
+   - ENSURE you create the complementary directional relationship
+   - MAINTAIN consistency in the relationship type
+   - PROVIDE unique description and evidence for this direction of the relationship
+
+5. For implied relationships mentioned in previous chunks:
+   - If you discover explicit evidence in this chunk, UPGRADE these relationships with the new information
+   - CONNECT characters who were previously not directly linked if this chunk reveals a connection
+
 GUIDELINES FOR RELATIONSHIPS:
 1. Create SEPARATE BIDIRECTIONAL RELATIONSHIPS to capture how each character perceives the other:
    - For each character pair (A and B), create TWO distinct relationship entries:
@@ -75,7 +104,13 @@ GUIDELINES FOR RELATIONSHIPS:
    - Direct quotes or paraphrased exchanges that reveal the source's attitude
    - Narrative commentary that illuminates the source's perception
 
-10. BE EXHAUSTIVE - find ALL possible directional relationships:
+10. For the description field, provide a substantive narrative overview of:
+    - The nature of the relationship from source to target
+    - How this relationship develops or changes
+    - The source's overall perspective on and attitude toward the target
+    - The relationship's significance to the narrative
+
+11. BE EXHAUSTIVE - find ALL possible directional relationships:
    - If two major characters both appear in this chunk, they MUST have relationships in both directions
    - Even if characters don't directly interact, consider their perceptions of each other
    - Think about how each character's actions or decisions might affect or reveal their view of other characters
@@ -97,6 +132,7 @@ Respond ONLY with a JSON object in the following structure:
       "target": "Character B's most complete formal name",
       "type": "structural relationship type only (e.g., 'uncle-nephew + king-subject')",
       "status": "source's perception of and attitude toward target",
+      "description": "Narrative overview of how source perceives and relates to target",
       "evidence": "Specific examples and quotes from this chunk showing how source perceives and acts toward target",
       "strength": number of interactions or references to this directional relationship in this chunk
     }
@@ -124,7 +160,8 @@ For EACH direction that is NOT already defined, determine:
 2. The structural relationship type (e.g., king-subject, rivals, friends)
 3. The source character's perception of and attitude toward the target
 4. A description of how the source relates to the target in the narrative
-5. The strength of this directional relationship (1-10)
+5. Evidence supporting this relationship from the text
+6. The strength of this directional relationship (1-10)
 
 GUIDELINES:
 
@@ -148,6 +185,7 @@ GUIDELINES:
    - TYPE: Structural relationship (e.g., "rivals", "king-subject", "in-laws")
    - STATUS: Source's perception of and attitude toward target (e.g., "distrustful", "admiring", "vengeful")
    - DESCRIPTION: A substantive description of how the source perceives and acts toward the target
+   - EVIDENCE: Specific examples or quotes from the text that support this relationship
    - STRENGTH: A rating from 1-10 of this directional relationship's importance
 
 4. Be thorough - ensure ALL major character pairs have defined relationships in BOTH directions
@@ -161,6 +199,7 @@ Respond with a JSON object containing ONLY the new directional relationships you
       "type": "structural relationship type",
       "status": "A's perception of and attitude toward B",
       "description": "Description of how A perceives and acts toward B",
+      "evidence": "Specific examples or quotes that support this relationship",
       "strength": narrative importance of this direction (1-10)
     },
     {
@@ -169,6 +208,7 @@ Respond with a JSON object containing ONLY the new directional relationships you
       "type": "structural relationship type",
       "status": "B's perception of and attitude toward A",
       "description": "Description of how B perceives and acts toward A",
+      "evidence": "Specific examples or quotes that support this relationship",
       "strength": narrative importance of this direction (1-10)
     }
   ]
@@ -219,8 +259,14 @@ FOR RELATIONSHIPS:
    - How the source's attitude affects their actions toward the target
    - Thematic significance of this directional relationship
    - Impact on both characters' development
+   
+3. Maintain BOTH description and evidence fields:
+   - DESCRIPTION: A substantive narrative analysis of the relationship
+   - EVIDENCE: Specific examples, quotes, or interactions from the text
+   - Ensure that both fields provide complementary information
+   - If one field is missing, use the other field to create appropriate content
 
-3. BIDIRECTIONAL RELATIONSHIP INFERENCE - THIS IS CRITICAL:
+4. BIDIRECTIONAL RELATIONSHIP INFERENCE - THIS IS CRITICAL:
    - You MUST thoroughly review each character description for explicit and implicit relationships
    - For EVERY pair of major characters, evaluate BOTH directions of their relationship
    - After reading character descriptions, create a comprehensive list of ALL possible directional relationships
@@ -228,23 +274,23 @@ FOR RELATIONSHIPS:
    - Be especially thorough with characters who are mentioned in each other's descriptions
    - Include adversarial, familial, political, and social relationships even if not directly stated
 
-4. For family relationships, infer connections like:
+5. For family relationships, infer connections like:
    - If A is "brother of B" and C is "son of B", then A is C's uncle AND C is A's nephew
    - If A and B are siblings, and C is A's child, and D is B's child, then C and D are cousins in both directions
    - If A is married to B, and C is B's sibling, then A and C are in-laws (in both directions)
    - If A is married to B, and C is B's child from a previous relationship, then A is C's step-parent AND C is A's step-child
 
-5. For political relationships, infer connections like:
+6. For political relationships, infer connections like:
    - If A is king, and B is a courtier, then A is B's ruler AND B is A's subject
    - If A is advisor to the king, and B is a foreign ambassador, they have political relationships in both directions
    - If A and B are both knights or nobles, they have peer relationships (in both directions)
 
-6. For adversarial relationships, infer connections like:
+7. For adversarial relationships, infer connections like:
    - If A killed B's father, A views B as a potential threat AND B views A with hatred
    - If A and B are both pursuing the throne, A sees B as a rival AND B sees A as an obstacle
    - If A is plotting against B, A views B as a target AND B might be suspicious of A
 
-7. Strictly separate relationship information into two clear components:
+8. Strictly separate relationship information into two clear components:
    
    - TYPE: ONLY the objective structural relationship(s). These are factual, social positions or connections that would appear on a family tree, court hierarchy, or social network diagram:
      * Family: "father-son", "uncle-nephew", "siblings", "cousins"
@@ -271,26 +317,26 @@ FOR RELATIONSHIPS:
      
      STATUS should capture how the source feels about and perceives the target.
 
-8. ANALYZE NARRATIVE PARALLELS AND SYMMETRIES:
+9. ANALYZE NARRATIVE PARALLELS AND SYMMETRIES:
    - Identify characters with parallel roles or journeys (e.g., sons avenging fathers)
    - Recognize foil relationships (characters who contrast each other)
    - Note characters who serve similar narrative functions
    
-9. ENSURE BIDIRECTIONAL RELATIONSHIP COMPLETENESS (CRITICAL):
+10. ENSURE BIDIRECTIONAL RELATIONSHIP COMPLETENESS (CRITICAL):
    - EVERY major character should have defined relationships in BOTH directions with ALL other major characters they interact with
    - Create a matrix of all major characters and check that relationships are defined in both directions between them
    - For major antagonists and protagonists, ALWAYS define relationships in both directions even if indirect
    - Include relationships that might not involve direct interaction but are narratively important
    - Do not limit yourself to relationships explicitly mentioned in the text
 
-10. Make directional relationship descriptions informative by explaining:
+11. Make directional relationship descriptions informative by explaining:
     - How the source's perception of the target evolves over time 
     - Key events that transform the source's attitude
     - How the source's perception affects their actions toward the target
     - How this directional relationship affects both characters
     - The narrative significance of this directional relationship
 
-11. Assign directional relationship strength (1-10) based on:
+12. Assign directional relationship strength (1-10) based on:
     - How important the source's perception of the target is to the main plot
     - The emotional intensity of the source's attitude toward the target
     - How much the source's perception affects their decisions
@@ -314,6 +360,7 @@ The refined output should be in this JSON structure:
       "type": "structural relationship type only (e.g., 'uncle-nephew + king-subject')",
       "status": "A's perception of and attitude toward B",
       "description": "Comprehensive description of how A perceives and acts toward B, including evolution and significance",
+      "evidence": "Specific examples and quotes showing how A relates to B",
       "strength": narrative importance of this directional relationship (1-10)
     },
     {
@@ -322,6 +369,7 @@ The refined output should be in this JSON structure:
       "type": "structural relationship type only (e.g., 'uncle-nephew + king-subject')",
       "status": "B's perception of and attitude toward A",
       "description": "Comprehensive description of how B perceives and acts toward A, including evolution and significance",
+      "evidence": "Specific examples and quotes showing how B relates to A",
       "strength": narrative importance of this directional relationship (1-10)
     }
   ]
@@ -389,38 +437,40 @@ function buildContextSummary(previousResults, chunkIndex) {
     return "";
   }
 
-  // Extract most important characters from previous chunks
-  const significantCharacters = previousResults.characters
-    .filter(
-      (char) =>
-        char.mentions > 3 ||
-        char.importance === "major" ||
-        char.importance === "supporting"
-    )
-    .slice(0, 15);
+  // Extract all characters from previous chunks
+  const significantCharacters = previousResults.characters;
 
-  // Format character summaries
+  // Format character summaries - use all available information
   const characterSummaries = significantCharacters
     .map((char) => {
       return `- ${char.name}${
         char.aliases ? ` (${char.aliases.join(", ")})` : ""
-      }: ${char.description.substring(0, 200)}${
-        char.description.length > 200 ? "..." : ""
-      }`;
+      }: ${char.description}`;
     })
     .join("\n");
 
-  // Extract most important relationships from previous chunks
-  const significantRelationships = previousResults.relationships
-    .filter((rel) => rel.strength > 2)
-    .slice(0, 20);
+  // Extract all relationships from previous chunks
+  const significantRelationships = previousResults.relationships;
 
-  // Format relationship summaries
+  // Format relationship summaries - use all available information
   const relationshipSummaries = significantRelationships
     .map((rel) => {
-      return `- ${rel.source} & ${rel.target}: ${rel.type} (${rel.status}) - ${
-        rel.evidence ? rel.evidence.substring(0, 150) : "No evidence"
-      }${rel.evidence && rel.evidence.length > 150 ? "..." : ""}`;
+      // Use evidence if available, otherwise use description
+      const evidenceText = rel.evidence ? rel.evidence : null;
+      const descriptionText = rel.description ? rel.description : null;
+
+      // Combine evidence and description if both exist and are different
+      let combinedText = "";
+      if (evidenceText && descriptionText && evidenceText !== descriptionText) {
+        combinedText = `Evidence: ${evidenceText} | Description: ${descriptionText}`;
+      } else {
+        combinedText =
+          evidenceText ||
+          descriptionText ||
+          "No evidence or description available";
+      }
+
+      return `- ${rel.source} & ${rel.target}: ${rel.type} (${rel.status}) - ${combinedText}`;
     })
     .join("\n");
 
@@ -433,7 +483,19 @@ function buildContextSummary(previousResults, chunkIndex) {
   RELATIONSHIPS:
   ${relationshipSummaries}
   
-  Use this context to inform your analysis of the current chunk, especially when identifying continuing character arcs and developing relationships. When you find information that extends or contradicts previous knowledge, prioritize updating and expanding rather than simply repeating.
+  INSTRUCTIONS FOR USING PREVIOUS CHUNK CONTEXT:
+  1. INTEGRATE rather than repeat: Build upon this existing information instead of starting from scratch
+  2. EXPAND descriptions with new details from the current chunk
+  3. IDENTIFY new relationship dynamics that weren't evident in previous chunks
+  4. COMPLETE bidirectional relationships by adding missing directions
+  5. TRACK character development by noting changes in characters or relationships
+  6. HIGHLIGHT contradictions between previous and current information
+  7. MAINTAIN consistency in character names, aliases, and relationship types
+  8. ADD new aliases, mentions, and relationships discovered in this chunk
+  9. UPDATE relationship strengths based on new interactions
+  10. INFER connections between characters who appeared separately in previous chunks but interact in this one
+  
+  Remember that this analysis is CUMULATIVE - your task is to BUILD ON previous knowledge, not replace it.
   `;
 }
 

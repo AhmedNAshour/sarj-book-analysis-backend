@@ -8,7 +8,7 @@ const prompts = require("./prompts");
  * @param {Array} chunkResults - Results from processed chunks
  * @returns {Object} Merged characters and relationships
  */
-function improvedMerge(chunkResults) {
+function mergeResults(chunkResults) {
   // Maps to track unique characters and relationships
   const characterMap = new Map();
   const relationshipMap = new Map();
@@ -111,7 +111,8 @@ function updateExistingCharacter(existingChar, character, chunkIndex) {
       existingChar.description = character.description;
     } else {
       // Just concatenate the descriptions - final refinement will handle deduplication
-      existingChar.description += ` In another section: ${character.description}`;
+      //TODO: Figure out if LLM can handle this better, or at least make sure descriptions are full from each chunk
+      // existingChar.description += ` In another section: ${character.description}`;
     }
   }
 }
@@ -169,13 +170,25 @@ function updateExistingRelationship(existingRel, relationship, chunkIndex) {
     }
   }
 
-  // Append evidence information
+  // Handle description field
+  if (relationship.description) {
+    if (!existingRel.description) {
+      existingRel.description = relationship.description;
+    } else {
+      //TODO: Figure out if LLM can handle this better, or at least make sure descriptions are full from each chunk
+      // Concatenate the descriptions
+      // existingRel.description += ` Later information: ${relationship.description}`;
+    }
+  }
+
+  // Handle evidence field
   if (relationship.evidence) {
     if (!existingRel.evidence) {
       existingRel.evidence = relationship.evidence;
     } else {
-      // Just concatenate the evidence - final refinement will handle deduplication
-      existingRel.evidence += ` Later evidence: ${relationship.evidence}`;
+      //TODO: Figure out if LLM can handle this better, or at least make sure descriptions are full from each chunk
+      // Concatenate the evidence
+      // existingRel.evidence += ` Later evidence: ${relationship.evidence}`;
     }
   }
 }
@@ -184,24 +197,8 @@ function updateExistingRelationship(existingRel, relationship, chunkIndex) {
  * Processes character arcs to add metadata
  */
 function processCharacterArcs(character) {
-  const appearances = character.chunkAppearances || [];
+  // Remove all tracking data that's no longer needed
   delete character.chunkAppearances;
-
-  // Calculate arc span (how much of the text they appear in)
-  if (appearances.length > 0) {
-    const firstAppearance = character.firstAppearance;
-    const lastAppearance = character.lastAppearance;
-    const arcSpan = lastAppearance - firstAppearance + 1;
-
-    // Add narrative arc information
-    character.arcSpan = arcSpan;
-    character.appearanceCount = appearances.length;
-
-    // Determine if the character has a continuous presence or sporadic appearances
-    character.presencePattern =
-      appearances.length === arcSpan ? "continuous" : "intermittent";
-  }
-
   delete character.firstAppearance;
   delete character.lastAppearance;
 }
@@ -210,24 +207,8 @@ function processCharacterArcs(character) {
  * Processes relationship arcs to add metadata
  */
 function processRelationshipArcs(relationship) {
-  const appearances = relationship.chunkAppearances || [];
+  // Remove all tracking data that's no longer needed
   delete relationship.chunkAppearances;
-
-  // Calculate relationship development
-  if (appearances.length > 0) {
-    const firstAppearance = relationship.firstAppearance;
-    const lastAppearance = relationship.lastAppearance;
-    const arcSpan = lastAppearance - firstAppearance + 1;
-
-    // Add relationship development information
-    relationship.arcSpan = arcSpan;
-    relationship.appearanceCount = appearances.length;
-
-    // Determine if the relationship has a continuous presence or sporadic appearances
-    relationship.developmentPattern =
-      appearances.length === arcSpan ? "continuous" : "intermittent";
-  }
-
   delete relationship.firstAppearance;
   delete relationship.lastAppearance;
 }
@@ -304,9 +285,28 @@ async function inferRelationships(client, modelName, results, title, author) {
         inferredRelations.newRelationships &&
         inferredRelations.newRelationships.length > 0
       ) {
+        // Ensure new relationships have both fields but don't copy between them
+        const normalizedRelationships = inferredRelations.newRelationships.map(
+          (rel) => {
+            // Clone the relationship to avoid modifying the original
+            const normalizedRel = { ...rel };
+
+            // Set empty string for missing fields but don't copy between them
+            if (!normalizedRel.description) {
+              normalizedRel.description = "";
+            }
+
+            if (!normalizedRel.evidence) {
+              normalizedRel.evidence = "";
+            }
+
+            return normalizedRel;
+          }
+        );
+
         results.relationships = [
           ...results.relationships,
-          ...inferredRelations.newRelationships,
+          ...normalizedRelationships,
         ];
       }
 
@@ -339,7 +339,7 @@ function parseOrReturnOriginal(jsonContent, originalData, context) {
 }
 
 module.exports = {
-  improvedMerge,
+  mergeResults,
   enhancedRefineFinalResults,
   inferRelationships,
 };
