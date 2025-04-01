@@ -16,6 +16,9 @@ function sanitizeAnalysisData(analysis) {
         status: String(rel.status || ""),
         description: String(rel.description || ""),
         evidence: String(rel.evidence || ""),
+        numberOfInteractions: Number(
+          isNaN(rel.numberOfInteractions) ? 0 : rel.numberOfInteractions
+        ),
       }))
     : [];
 

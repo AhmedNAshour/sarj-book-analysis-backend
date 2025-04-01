@@ -51,6 +51,11 @@ const RelationshipSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  numberOfInteractions: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
 });
 
 // Interaction schema

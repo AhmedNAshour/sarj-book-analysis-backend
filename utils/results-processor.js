@@ -531,10 +531,10 @@ async function refineResults(client, modelName, rawResults, title, author) {
       });
     }
 
-    // Restore interactions to refined results
-    if (parsedResults.interactions) {
-      parsedResults.interactions = rawResults.interactions;
-    }
+    // // Restore interactions to refined results
+    // if (parsedResults.interactions) {
+    //   parsedResults.interactions = rawResults.interactions;
+    // }
 
     // Normalize character names to ensure consistency
     return normalizeCharacterNames(parsedResults);

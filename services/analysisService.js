@@ -334,13 +334,15 @@ function updateInteractionCounts(results, interactions) {
     const source = relationship.source.toLowerCase();
     const target = relationship.target.toLowerCase();
     const key = `${source}|${target}`;
+    console.log("Key: ", key);
 
     // Update numberOfInteractions based on actual count
     const interactionCount = interactionCountMap.get(key);
     if (interactionCount !== undefined) {
+      console.log("Interaction count - key: ", key, " - ", interactionCount);
       relationship.numberOfInteractions = interactionCount;
     } else {
-      relationship.numberOfInteractions = 0;
+      relationship.numberOfInteractions = 1;
     }
   });
 
