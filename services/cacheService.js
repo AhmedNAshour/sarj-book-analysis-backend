@@ -141,7 +141,6 @@ async function saveAnalysis(bookId, analysis, options = {}) {
       }
     );
 
-    console.log(`Analysis saved successfully for book ${bookId}`);
     return result;
   } catch (error) {
     console.error(`Error saving analysis for book ${bookId}:`, error);
@@ -181,7 +180,6 @@ async function updateAnalysis(bookId, updateData) {
   }
 
   try {
-    // We don't allow updating the bookId
     if (updateData.bookId) {
       delete updateData.bookId;
     }

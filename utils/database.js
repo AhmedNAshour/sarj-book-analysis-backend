@@ -9,7 +9,6 @@ async function connectDB() {
     const connectionString =
       process.env.MONGODB_URI || "mongodb://localhost:27017/sarj-book-analysis";
 
-    // Set Mongoose options for better stability
     const mongooseOptions = {
       autoIndex: true,
       serverSelectionTimeoutMS: 5000,
@@ -20,10 +19,8 @@ async function connectDB() {
     await mongoose.connect(connectionString, mongooseOptions);
     console.log("MongoDB Connected");
 
-    // Set up connection event listeners
     mongoose.connection.on("error", (err) => {
       console.error("MongoDB connection error:", err);
-      // Don't exit in production, as mongoose will attempt to reconnect automatically
     });
 
     mongoose.connection.on("disconnected", () => {
@@ -35,7 +32,6 @@ async function connectDB() {
     });
   } catch (error) {
     console.error("MongoDB Connection Error:", error.message);
-    // In production, we might want to retry rather than exit immediately
     if (process.env.NODE_ENV === "production") {
       console.error("Failed to connect to MongoDB. Retrying in 5 seconds...");
       setTimeout(connectDB, 5000);
@@ -46,7 +42,7 @@ async function connectDB() {
 }
 
 /**
- * Gracefully close the MongoDB connection
+ * Close the MongoDB connection
  */
 async function closeDB() {
   try {

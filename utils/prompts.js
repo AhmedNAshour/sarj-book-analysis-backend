@@ -1,4 +1,3 @@
-// prompts.js - Improved version with interaction tracking
 const TEMPLATES = {
   // First chunk prompt focuses on establishing baseline character and relationship data
   FIRST_CHUNK_EXTRACTION: `
@@ -505,7 +504,6 @@ After completing your initial analysis, REVIEW all major characters (those marke
 
 Return ONLY the JSON object with no additional text.
 `,
-  // Add other templates as needed
 };
 
 /**

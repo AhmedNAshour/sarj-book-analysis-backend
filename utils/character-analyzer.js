@@ -1,4 +1,3 @@
-// character-analyzer.js
 const { extractJSON } = require("./content-processor");
 const { generateCompletion } = require("./llm-client");
 const prompts = require("./prompts");

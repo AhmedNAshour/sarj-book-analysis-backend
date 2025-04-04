@@ -35,8 +35,8 @@ async function fetchBookMetadata(bookId) {
 
   // Extract title
   const titleAndAuthor = $("h1[itemprop='name']").text().trim();
-  //extract title without "by"
   const title = titleAndAuthor.split("by")[0].trim();
+
   // Extract author
   const author = titleAndAuthor.split("by")[1].trim();
 

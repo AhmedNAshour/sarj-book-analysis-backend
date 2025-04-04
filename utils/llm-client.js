@@ -1,4 +1,3 @@
-// llm-client.js
 const Groq = require("groq-sdk");
 const OpenAI = require("openai");
 const config = require("../config");

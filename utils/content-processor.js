@@ -1,4 +1,3 @@
-// content-processor.js
 const config = require("../config");
 
 /**
@@ -8,7 +7,6 @@ const config = require("../config");
  * @returns {string[]} Array of text chunks
  */
 function chunkContent(content, maxChunkSize = config.chunking.defaultSize) {
-  // Ensure we're working with a clean string
   const cleanContent = content.trim();
 
   // If content is smaller than max chunk size, return it as a single chunk
@@ -22,7 +20,6 @@ function chunkContent(content, maxChunkSize = config.chunking.defaultSize) {
 
   // Create chunks that maximize the use of available size
   while (position < totalLength) {
-    // Calculate potential end position using max chunk size
     let end = Math.min(position + maxChunkSize, totalLength);
 
     // If we're not at the end of the content, find better break point
@@ -30,17 +27,14 @@ function chunkContent(content, maxChunkSize = config.chunking.defaultSize) {
       end = findBestBreakPoint(cleanContent, position, end, maxChunkSize);
     }
 
-    // Extract the chunk and trim whitespace
     const chunk = cleanContent.slice(position, end).trim();
     if (chunk) {
       chunks.push(chunk);
     }
 
-    // Move to the next position
     position = end;
   }
 
-  // Log chunk sizes for debugging
   console.log(
     `Created ${chunks.length} chunks with sizes: ${chunks
       .map((c) => c.length)

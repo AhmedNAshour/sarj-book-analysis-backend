@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-// Character schema
 const CharacterSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -23,7 +22,6 @@ const CharacterSchema = new mongoose.Schema({
   },
 });
 
-// Relationship schema
 const RelationshipSchema = new mongoose.Schema({
   source: {
     type: String,
@@ -58,7 +56,6 @@ const RelationshipSchema = new mongoose.Schema({
   },
 });
 
-// Interaction schema
 const InteractionSchema = new mongoose.Schema({
   characters: {
     type: [String],
@@ -86,7 +83,6 @@ const InteractionSchema = new mongoose.Schema({
   },
 });
 
-// MetaData schema
 const MetaDataSchema = new mongoose.Schema({
   consistencyKey: String,
   chunksProcessed: {
@@ -120,7 +116,6 @@ const MetaDataSchema = new mongoose.Schema({
   provider: String,
 });
 
-// Main Analysis schema
 const AnalysisSchema = new mongoose.Schema(
   {
     bookId: {
@@ -157,21 +152,17 @@ const AnalysisSchema = new mongoose.Schema(
   }
 );
 
-// Add compound indices for more efficient queries
 AnalysisSchema.index({ bookId: 1, createdAt: -1 });
 AnalysisSchema.index({ author: 1, title: 1 });
 
-// Add virtual for character count
 AnalysisSchema.virtual("characterCount").get(function () {
   return this.characters?.length || 0;
 });
 
-// Add virtual for relationship count
 AnalysisSchema.virtual("relationshipCount").get(function () {
   return this.relationships?.length || 0;
 });
 
-// Add data validation hook
 AnalysisSchema.pre("save", function (next) {
   if (this.isModified("relationships")) {
     // Ensure source and target characters exist in characters array
@@ -189,7 +180,6 @@ AnalysisSchema.pre("save", function (next) {
       console.warn(
         `Warning: ${invalidRelationships.length} relationships reference characters not in character list`
       );
-      // Not blocking save, just warning
     }
   }
 

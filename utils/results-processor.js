@@ -1,4 +1,3 @@
-// results-processor.js
 const { extractJSON } = require("./content-processor");
 const { generateCompletion } = require("./llm-client");
 const prompts = require("./prompts");
@@ -226,10 +225,6 @@ function updateExistingCharacter(existingChar, character, chunkIndex) {
   if (character.description) {
     if (!existingChar.description) {
       existingChar.description = character.description;
-    } else {
-      // Just concatenate the descriptions - final refinement will handle deduplication
-      //TODO: Figure out if LLM can handle this better, or at least make sure descriptions are full from each chunk
-      // existingChar.description += ` In another section: ${character.description}`;
     }
   }
 }
@@ -322,10 +317,6 @@ function updateExistingRelationship(existingRel, relationship, chunkIndex) {
   if (relationship.description) {
     if (!existingRel.description) {
       existingRel.description = relationship.description;
-    } else {
-      //TODO: Figure out if LLM can handle this better, or at least make sure descriptions are full from each chunk
-      // Concatenate the descriptions
-      // existingRel.description += ` Later information: ${relationship.description}`;
     }
   }
 
@@ -530,11 +521,6 @@ async function refineResults(client, modelName, rawResults, title, author) {
         }
       });
     }
-
-    // // Restore interactions to refined results
-    // if (parsedResults.interactions) {
-    //   parsedResults.interactions = rawResults.interactions;
-    // }
 
     // Normalize character names to ensure consistency
     return normalizeCharacterNames(parsedResults);

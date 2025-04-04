@@ -1,4 +1,3 @@
-// config.js
 module.exports = {
   // LLM API settings
   api: {
